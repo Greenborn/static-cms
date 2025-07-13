@@ -1,0 +1,79 @@
+{
+  "name": "Static CMS",
+  "description": "Sistema de gestión de contenido estático moderno y eficiente",
+  "url": "https://static-cms.example.com",
+  "language": "es",
+  "timezone": "America/Mexico_City",
+  "assets_url": "/assets",
+  "media_url": "/media",
+  "admin_url": "/admin",
+  "version": "1.0.0",
+  "author": {
+    "name": "Static CMS Team",
+    "email": "info@static-cms.com",
+    "url": "https://static-cms.com"
+  },
+  "hero": {
+    "title": "Bienvenido a Static CMS",
+    "subtitle": "Un sistema moderno para crear sitios web estáticos de alto rendimiento",
+    "button": {
+      "text": "Comenzar",
+      "url": "/pages/getting-started",
+      "style": "primary",
+      "size": "lg"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/staticcms",
+    "twitter": "https://twitter.com/staticcms",
+    "instagram": "https://instagram.com/staticcms",
+    "github": "https://github.com/static-cms",
+    "linkedin": "https://linkedin.com/company/static-cms"
+  },
+  "contact": {
+    "email": "info@static-cms.com",
+    "phone": "+52 1 234 567 8900",
+    "address": {
+      "street": "Calle Principal 123",
+      "city": "Ciudad de México",
+      "state": "CDMX",
+      "zip": "12345",
+      "country": "México"
+    }
+  },
+  "features": {
+    "blog": true,
+    "multimedia": true,
+    "seo": true,
+    "analytics": true,
+    "comments": false,
+    "newsletter": true
+  },
+  "seo": {
+    "default_title": "Static CMS - Sistema de Gestión de Contenido Estático",
+    "default_description": "Crea sitios web estáticos modernos y de alto rendimiento con nuestro sistema de gestión de contenido.",
+    "default_keywords": "cms, static site, web development, content management",
+    "og_image": "/assets/images/og-default.jpg",
+    "twitter_card": "summary_large_image",
+    "twitter_creator": "@staticcms"
+  },
+  "analytics": {
+    "google_analytics": "GA_MEASUREMENT_ID",
+    "google_tag_manager": "GTM_CONTAINER_ID",
+    "facebook_pixel": "FACEBOOK_PIXEL_ID"
+  },
+  "performance": {
+    "lazy_loading": true,
+    "image_optimization": true,
+    "minification": true,
+    "compression": true,
+    "cache_headers": true
+  },
+  "security": {
+    "csp": true,
+    "hsts": true,
+    "xss_protection": true,
+    "content_type_options": true,
+    "frame_options": "DENY"
+  }
+} 

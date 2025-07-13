@@ -1,0 +1,271 @@
+# Static CMS - Reglas de Cursor
+
+## 🎯 Contexto del Proyecto
+
+Este es un sistema de gestión de contenido estático (Static CMS) desarrollado en español. El proyecto está organizado en módulos independientes:
+
+- **api/**: Backend Node.js + Express con SQLite
+- **panel_admin/**: Frontend React + TypeScript + Vite
+- **public/**: Sitio estático generado
+- **template/**: Sistema de plantillas
+- **documentacion/**: Documentación completa
+
+## 📝 Reglas de Código
+
+### Lenguaje y Comunicación
+- **Siempre responder en español**
+- **Usar terminología técnica apropiada**
+- **Explicar conceptos complejos de forma clara**
+
+### Estructura de Archivos
+- **Mantener la organización modular** del proyecto
+- **Seguir las convenciones de nomenclatura** establecidas
+- **Crear archivos en los directorios apropiados**
+
+### Backend (API)
+- **Usar Node.js 18+ y Express.js**
+- **Base de datos SQLite** para simplicidad
+- **Autenticación JWT + Telegram Bot API**
+- **Validación con Joi**
+- **Logging con Winston**
+- **Seguridad con Helmet, CORS, Rate Limiting**
+
+### Frontend (Panel Admin)
+- **React 18 + TypeScript**
+- **Vite como build tool**
+- **Tailwind CSS para estilos**
+- **React Query para estado**
+- **React Hook Form para formularios**
+- **Lucide React para iconos**
+
+### Base de Datos
+- **SQLite para desarrollo y producción**
+- **Migraciones automáticas**
+- **Backup automático**
+- **Índices apropiados para rendimiento**
+
+### Seguridad
+- **Validación de entrada** en todos los endpoints
+- **Sanitización de datos** antes de almacenar
+- **Rate limiting** para prevenir abuso
+- **Headers de seguridad** apropiados
+- **Validación de archivos** multimedia
+
+## 🏗️ Arquitectura
+
+### Patrones de Diseño
+- **MVC** para la API
+- **Component-based** para React
+- **Service Layer** para lógica de negocio
+- **Repository Pattern** para acceso a datos
+
+### API RESTful
+- **Endpoints RESTful** estándar
+- **Códigos de estado HTTP** apropiados
+- **Respuestas JSON** consistentes
+- **Documentación OpenAPI** (Swagger)
+
+### Sistema de Plantillas
+- **Motor de plantillas personalizado**
+- **Sintaxis simple**: `{{ variable }}` y `{% if condition %}`
+- **Herencia de plantillas**
+- **Componentes reutilizables**
+- **Helpers para formateo**
+
+## 📋 Convenciones
+
+### Nomenclatura
+- **Variables**: camelCase
+- **Funciones**: camelCase
+- **Clases**: PascalCase
+- **Constantes**: UPPER_SNAKE_CASE
+- **Archivos**: kebab-case
+- **Directorios**: kebab-case
+
+### Comentarios
+- **Comentarios en español**
+- **JSDoc** para funciones y clases
+- **Comentarios explicativos** para lógica compleja
+- **TODO/FIXME** para tareas pendientes
+
+### Commits
+- **Usar # para issues**: `[#1234] feat: nueva funcionalidad`
+- **Prefijos**: feat, fix, docs, style, refactor, test, chore
+- **Mensajes descriptivos** en español
+- **Máximo 255 caracteres** en el mensaje de commit
+
+### Documentación
+- **README.md** en cada módulo
+- **Documentación técnica** completa
+- **Ejemplos de uso**
+- **Troubleshooting** común
+
+## 🔧 Configuración
+
+### Variables de Entorno
+- **Archivos .env.example** en cada módulo
+- **Validación de variables** requeridas
+- **Valores por defecto** apropiados
+- **Documentación** de cada variable
+
+### Dependencias
+- **Versiones específicas** en package.json
+- **Actualizaciones regulares** de seguridad
+- **Auditoría de vulnerabilidades**
+- **Dependencias mínimas** necesarias
+
+## 🚀 Despliegue
+
+### Desarrollo
+- **Hot reload** para desarrollo
+- **Proxy** configurado entre frontend y backend
+- **Logs detallados** en desarrollo
+- **Debugging** facilitado
+
+### Producción
+- **Optimización** de assets
+- **Compresión** de archivos
+- **Cache** apropiado
+- **Monitoreo** de rendimiento
+
+## 🧪 Testing
+
+### Backend
+- **Tests unitarios** con Jest
+- **Tests de integración** para API
+- **Tests de base de datos**
+- **Cobertura de código**
+
+### Frontend
+- **Tests de componentes** con React Testing Library
+- **Tests de hooks** personalizados
+- **Tests de integración** con API
+- **Tests E2E** (preparado)
+
+## 📊 Rendimiento
+
+### Métricas Objetivo
+- **First Contentful Paint**: < 1.5s
+- **Largest Contentful Paint**: < 2.5s
+- **Cumulative Layout Shift**: < 0.1
+- **First Input Delay**: < 100ms
+
+### Optimizaciones
+- **Lazy loading** para recursos pesados
+- **Compresión** de archivos
+- **Cache** de navegador
+- **Optimización** de imágenes
+
+## 🔍 Debugging
+
+### Logs
+- **Logs estructurados** con Winston
+- **Niveles apropiados** (error, warn, info, debug)
+- **Contexto** en cada log
+- **Rotación** de archivos de log
+
+### Errores
+- **Manejo centralizado** de errores
+- **Respuestas de error** consistentes
+- **Logs de errores** detallados
+- **Recuperación** graceful
+
+## 🤝 Contribución
+
+### Pull Requests
+- **Descripción clara** del cambio
+- **Tests incluidos**
+- **Documentación actualizada**
+- **Revisión de código** requerida
+
+### Issues
+- **Templates** para bugs y features
+- **Reproducción** de bugs
+- **Contexto** completo
+- **Priorización** clara
+
+## 📚 Referencias
+
+### Documentación
+- **README principal** actualizado
+- **Documentación técnica** completa
+- **Guías de usuario**
+- **API documentation**
+
+### Herramientas
+- **ESLint + Prettier** para linting
+- **Husky** para git hooks
+- **Commitizen** para commits
+- **Semantic Release** (preparado)
+
+## 🎨 UI/UX
+
+### Diseño
+- **Consistencia visual** en todo el sistema
+- **Accesibilidad** (WCAG 2.1)
+- **Responsive design** mobile-first
+- **Dark mode** (preparado)
+
+### Componentes
+- **Reutilizables** y modulares
+- **Props tipadas** con TypeScript
+- **Documentación** de uso
+- **Tests** de componentes
+
+## 🔐 Autenticación
+
+### Telegram Bot
+- **Configuración** del bot
+- **Validación** de códigos
+- **Seguridad** de tokens
+- **Fallback** para errores
+
+### JWT
+- **Tokens seguros** con expiración
+- **Refresh tokens** (preparado)
+- **Blacklisting** de tokens
+- **Rotación** de secretos
+
+## 📱 Funcionalidades
+
+### Gestión de Contenido
+- **CRUD completo** para todas las entidades
+- **Validación** de datos
+- **Relaciones** entre entidades
+- **Búsqueda** y filtrado
+
+### Constructor de Sitio
+- **Generación** de archivos estáticos
+- **Optimización** automática
+- **Incremental builds**
+- **Rollback** de versiones
+
+### Multimedia
+- **Subida** de archivos
+- **Validación** de tipos
+- **Optimización** de imágenes
+- **Miniaturas** automáticas
+
+## 🚨 Consideraciones Especiales
+
+### Seguridad
+- **Validación** de entrada siempre
+- **Sanitización** de datos
+- **Headers** de seguridad
+- **Auditoría** regular
+
+### Escalabilidad
+- **Arquitectura modular**
+- **Caching** apropiado
+- **Optimización** de consultas
+- **Monitoreo** de recursos
+
+### Mantenibilidad
+- **Código limpio** y legible
+- **Documentación** actualizada
+- **Tests** automatizados
+- **Refactoring** regular
+
+---
+
+**Nota**: Estas reglas deben seguirse para mantener la consistencia y calidad del código en todo el proyecto Static CMS. 

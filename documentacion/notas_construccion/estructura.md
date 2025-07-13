@@ -15,6 +15,7 @@ El diseño estético general se realizará por medio de plantillas mustacheables
 - api
 - panel_admin
 - public
+- template
 
 # Tecnologías Utilizadas
 

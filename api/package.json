@@ -1,0 +1,55 @@
+{
+  "name": "static-cms-api",
+  "version": "1.0.0",
+  "description": "API backend para Static CMS - Constructor de sitios estáticos",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest",
+    "db:init": "node database/init.js",
+    "db:migrate": "node database/migrate.js",
+    "db:seed": "node database/seed.js"
+  },
+  "keywords": [
+    "static-cms",
+    "api",
+    "nodejs",
+    "express",
+    "sqlite",
+    "mustache"
+  ],
+  "author": "Static CMS Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "mustache": "^4.2.0",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.32.6",
+    "node-telegram-bot-api": "^0.64.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.3.1",
+    "uuid": "^9.0.1",
+    "html-minifier": "^4.0.0",
+    "terser": "^5.24.0",
+    "clean-css": "^5.3.2",
+    "fs-extra": "^11.2.0",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+} 
