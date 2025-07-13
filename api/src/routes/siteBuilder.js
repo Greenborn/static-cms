@@ -6,7 +6,7 @@ const minify = require('html-minifier').minify;
 const CleanCSS = require('clean-css');
 const { minify: terserMinify } = require('terser');
 const db = require('../config/database');
-const { asyncHandler } = require('../middleware/auth');
+const { asyncHandler } = require('../middleware/errorHandler');
 const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();

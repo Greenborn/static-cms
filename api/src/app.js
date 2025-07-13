@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -76,6 +77,15 @@ app.use('/api/views', authMiddleware, viewRoutes);
 app.use('/api/media', authMiddleware, mediaRoutes);
 app.use('/api/formatters', authMiddleware, formatterRoutes);
 app.use('/api/site-builder', authMiddleware, siteBuilderRoutes);
+
+// Servir el panel de administración (frontend)
+const adminBuildPath = path.resolve(__dirname, '../../panel_admin/dist');
+app.use('/admin', express.static(adminBuildPath));
+
+// Redirigir cualquier ruta desconocida de /admin al index.html del frontend (SPA)
+app.get('/admin/*', (req, res) => {
+  res.sendFile(path.join(adminBuildPath, 'index.html'));
+});
 
 // Health check
 app.get('/health', (req, res) => {

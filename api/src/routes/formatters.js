@@ -1,6 +1,6 @@
 const express = require('express');
+const { asyncHandler } = require('../middleware/errorHandler');
 const db = require('../config/database');
-const { asyncHandler } = require('../middleware/auth');
 const { 
   createError, 
   validateAndSanitize 

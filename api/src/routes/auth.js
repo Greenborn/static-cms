@@ -4,13 +4,13 @@ const db = require('../config/database');
 const { 
   generateToken, 
   createTempSession, 
-  checkTempSession,
-  asyncHandler 
+  checkTempSession
 } = require('../middleware/auth');
 const { 
   createError, 
   validateRequiredFields,
-  validateAndSanitize 
+  validateAndSanitize,
+  asyncHandler 
 } = require('../middleware/errorHandler');
 
 const router = express.Router();
