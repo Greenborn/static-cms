@@ -25,10 +25,6 @@ class Database {
         }
       });
 
-      // Configurar modo de logging
-      const sqliteMode = process.env.SQLITE_MODE || 'normal';
-      this.db.configure(sqliteMode);
-
     } catch (error) {
       console.error('Error initializing database:', error);
     }

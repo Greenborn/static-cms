@@ -1,10 +1,10 @@
 # Panel de Administración - Static CMS
 
-Panel de administración web para gestionar el contenido del Static CMS. Desarrollado con React, TypeScript y Tailwind CSS.
+Panel de administración web para gestionar el contenido del Static CMS. Desarrollado con Vue 3, JavaScript y Bootstrap 5.
 
 ## 🚀 Características
 
-- **Interfaz moderna y responsiva** con Tailwind CSS
+- **Interfaz moderna y responsiva** con Bootstrap 5
 - **Autenticación por Telegram** con códigos de verificación
 - **Gestión completa de páginas** (CRUD, estados, estadísticas)
 - **Administración de tipos de contenido** con campos personalizables
@@ -17,11 +17,10 @@ Panel de administración web para gestionar el contenido del Static CMS. Desarro
 
 ## 🛠️ Tecnologías
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Estilos**: Tailwind CSS, Lucide React (iconos)
-- **Estado**: React Query, React Hook Form
-- **Navegación**: React Router DOM
-- **Notificaciones**: React Hot Toast
+- **Frontend**: Vue 3, JavaScript, Vite
+- **Estilos**: Bootstrap 5, Bootstrap Icons
+- **Estado**: Vue 3 Composition API
+- **Navegación**: Vue Router 4
 - **HTTP Client**: Axios
 
 ## 📦 Instalación
@@ -54,30 +53,26 @@ El panel estará disponible en `http://localhost:3001`
 ```
 src/
 ├── components/          # Componentes reutilizables
-│   ├── Layout.tsx      # Layout principal con sidebar
-│   ├── ui/             # Componentes de UI básicos
-│   └── forms/          # Componentes de formularios
-├── hooks/              # Custom hooks
-│   ├── useAuth.ts      # Hook de autenticación
-│   └── useApi.ts       # Hook para llamadas API
+│   └── Layout.vue      # Layout principal con sidebar
 ├── pages/              # Páginas de la aplicación
-│   ├── Login.tsx       # Página de autenticación
-│   ├── Dashboard.tsx   # Dashboard principal
-│   ├── Pages.tsx       # Gestión de páginas
-│   ├── ContentTypes.tsx # Tipos de contenido
-│   ├── Views.tsx       # Vistas y plantillas
-│   ├── Media.tsx       # Gestor multimedia
-│   ├── Formatters.tsx  # Formateadores
-│   ├── SiteBuilder.tsx # Constructor de sitio
-│   └── Settings.tsx    # Configuraciones
+│   ├── Login.vue       # Página de autenticación
+│   ├── Dashboard.vue   # Dashboard principal
+│   ├── Pages.vue       # Gestión de páginas
+│   ├── ContentTypes.vue # Tipos de contenido
+│   ├── Views.vue       # Vistas y plantillas
+│   ├── Media.vue       # Gestor multimedia
+│   ├── Formatters.vue  # Formateadores
+│   ├── SiteBuilder.vue # Constructor de sitio
+│   └── Settings.vue    # Configuraciones
 ├── services/           # Servicios y API
-│   └── api.ts          # Cliente API
-├── types/              # Tipos TypeScript
-│   └── index.ts        # Definiciones de tipos
+│   └── api.js          # Cliente API
+├── stores/             # Stores de estado
+│   └── auth.js         # Store de autenticación
 ├── utils/              # Utilidades
-├── App.tsx             # Componente principal
-├── main.tsx            # Punto de entrada
-└── index.css           # Estilos globales
+├── App.vue             # Componente principal
+├── main.js             # Punto de entrada
+├── router.js           # Configuración de rutas
+└── main.css            # Estilos globales
 ```
 
 ## 🔐 Autenticación
@@ -142,25 +137,24 @@ El panel utiliza autenticación por Telegram:
 ## 🎨 Componentes UI
 
 ### Botones
-```tsx
-<button className="btn btn-primary">Botón Primario</button>
-<button className="btn btn-secondary">Botón Secundario</button>
-<button className="btn btn-outline">Botón Outline</button>
+```html
+<button class="btn btn-primary">Botón Primario</button>
+<button class="btn btn-secondary">Botón Secundario</button>
+<button class="btn btn-outline-primary">Botón Outline</button>
 ```
 
 ### Inputs
-```tsx
-<input className="input" placeholder="Texto..." />
+```html
+<input class="form-control" placeholder="Texto..." />
 ```
 
 ### Cards
-```tsx
-<div className="card">
-  <div className="card-header">
-    <h3 className="card-title">Título</h3>
-    <p className="card-description">Descripción</p>
+```html
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title">Título</h5>
   </div>
-  <div className="card-content">
+  <div class="card-body">
     Contenido
   </div>
 </div>
@@ -179,8 +173,8 @@ El panel utiliza autenticación por Telegram:
 
 El panel está configurado para hacer proxy de las llamadas API al backend durante desarrollo:
 
-```typescript
-// vite.config.ts
+```javascript
+// vite.config.js
 server: {
   proxy: {
     '/api': {
@@ -193,106 +187,64 @@ server: {
 
 ## 📊 Estado de la Aplicación
 
-### React Query
-- Cache inteligente de datos
-- Refetch automático en background
-- Optimistic updates
-- Error handling centralizado
+### Vue 3 Composition API
+- Estado reactivo con `ref()` y `reactive()`
+- Stores modulares para gestión de estado
+- Computed properties para derivaciones
+- Watchers para efectos secundarios
 
-### Autenticación
-- Context API para estado global
-- Persistencia en localStorage
-- Interceptores de Axios para tokens
-- Logout automático en errores 401
+### Store de Autenticación
+```javascript
+import { useAuthStore } from './stores/auth.js'
 
-## 🚀 Despliegue
-
-### Build de Producción
-```bash
-npm run build
+const authStore = useAuthStore()
+const { user, isAuthenticated, login, logout } = authStore
 ```
 
-### Servir Build
-```bash
-npm run preview
-```
+## 🚀 Scripts Disponibles
 
-### Configuración de Servidor
+- `npm run dev` - Servidor de desarrollo
+- `npm run build` - Construcción para producción
+- `npm run preview` - Vista previa de producción
+- `npm run lint` - Linting del código
+- `npm run lint:fix` - Linting y corrección automática
 
-Para producción, configurar el servidor web para servir la aplicación SPA:
+## 🔒 Seguridad
 
-```nginx
-# Nginx
-location / {
-    try_files $uri $uri/ /index.html;
-}
-```
+- **Autenticación JWT** con expiración
+- **Interceptores de Axios** para manejo de tokens
+- **Guardias de ruta** para protección de páginas
+- **Validación de entrada** en formularios
+- **Sanitización de datos** antes de envío
 
-## 🔍 Desarrollo
+## 📱 Responsive Design
 
-### Scripts Disponibles
+El panel está completamente optimizado para dispositivos móviles:
 
-```bash
-npm run dev          # Servidor de desarrollo
-npm run build        # Build de producción
-npm run preview      # Preview del build
-npm run lint         # Linting
-npm run lint:fix     # Linting con auto-fix
-```
+- **Sidebar colapsable** en pantallas pequeñas
+- **Navegación adaptativa** con menú hamburguesa
+- **Cards responsive** que se ajustan al contenido
+- **Formularios optimizados** para touch
 
-### Estructura de Commits
+## 🎯 Próximas Funcionalidades
 
-```
-feat: nueva funcionalidad
-fix: corrección de bug
-docs: documentación
-style: cambios de estilo
-refactor: refactorización
-test: tests
-chore: tareas de mantenimiento
-```
-
-## 🐛 Troubleshooting
-
-### Errores Comunes
-
-1. **Error de conexión al API**
-   - Verificar que el backend esté ejecutándose
-   - Comprobar la URL en `VITE_API_URL`
-
-2. **Error de autenticación**
-   - Limpiar localStorage
-   - Verificar configuración de Telegram
-
-3. **Error de build**
-   - Verificar dependencias: `npm install`
-   - Limpiar cache: `npm run build -- --force`
-
-### Logs de Desarrollo
-
-Los logs se muestran en la consola del navegador. Para debugging:
-
-```typescript
-// Habilitar logs detallados
-localStorage.setItem('debug', 'true')
-```
-
-## 📚 Referencias
-
-- [React Documentation](https://react.dev/)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [Tailwind CSS](https://tailwindcss.com/docs)
-- [React Query](https://tanstack.com/query/latest)
-- [Vite](https://vitejs.dev/guide/)
+- [ ] Editor de contenido WYSIWYG
+- [ ] Sistema de notificaciones en tiempo real
+- [ ] Exportación de datos
+- [ ] Temas personalizables
+- [ ] Modo oscuro
+- [ ] Accesibilidad mejorada
+- [ ] Tests automatizados
+- [ ] PWA (Progressive Web App)
 
 ## 🤝 Contribución
 
-1. Fork del repositorio
-2. Crear rama feature: `git checkout -b feature/nueva-funcionalidad`
-3. Commit cambios: `git commit -m 'feat: nueva funcionalidad'`
-4. Push a la rama: `git push origin feature/nueva-funcionalidad`
-5. Crear Pull Request
+1. Fork el proyecto
+2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir un Pull Request
 
 ## 📄 Licencia
 
-MIT License - ver [LICENSE](../LICENSE) para detalles. 
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles. 

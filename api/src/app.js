@@ -5,6 +5,8 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const fs = require('fs-extra');
+const { spawn } = require('child_process');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -20,6 +22,85 @@ const { authMiddleware } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Función para verificar y construir el panel de administración
+const ensureAdminPanelBuilt = async () => {
+  const adminBuildPath = path.resolve(__dirname, '../../panel_admin/dist');
+  const adminPackagePath = path.resolve(__dirname, '../../panel_admin/package.json');
+  
+  try {
+    // Verificar si existe el directorio de build
+    const buildExists = await fs.pathExists(adminBuildPath);
+    const packageExists = await fs.pathExists(adminPackagePath);
+    
+    if (!packageExists) {
+      console.log('⚠️  Panel de administración no encontrado en ../panel_admin/');
+      return false;
+    }
+    
+    if (!buildExists) {
+      console.log('🔨 Panel de administración no compilado. Iniciando build automático...');
+      
+      // Verificar si node_modules existe
+      const nodeModulesPath = path.resolve(__dirname, '../../panel_admin/node_modules');
+      const nodeModulesExists = await fs.pathExists(nodeModulesPath);
+      
+      if (!nodeModulesExists) {
+        console.log('📦 Instalando dependencias del panel de administración...');
+        await runCommand('npm', ['install'], '../../panel_admin');
+      }
+      
+      console.log('🏗️  Compilando panel de administración...');
+      await runCommand('npm', ['run', 'build'], '../../panel_admin');
+      
+      console.log('✅ Panel de administración compilado exitosamente');
+      return true;
+    }
+    
+    console.log('✅ Panel de administración ya está compilado');
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Error construyendo panel de administración:', error.message);
+    return false;
+  }
+};
+
+// Función para ejecutar comandos
+const runCommand = (command, args, cwd) => {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: path.resolve(__dirname, cwd),
+      stdio: 'pipe',
+      shell: true
+    });
+    
+    let output = '';
+    let errorOutput = '';
+    
+    child.stdout.on('data', (data) => {
+      output += data.toString();
+      console.log(`[${command}] ${data.toString().trim()}`);
+    });
+    
+    child.stderr.on('data', (data) => {
+      errorOutput += data.toString();
+      console.error(`[${command}] ERROR: ${data.toString().trim()}`);
+    });
+    
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve(output);
+      } else {
+        reject(new Error(`Command failed with code ${code}: ${errorOutput}`));
+      }
+    });
+    
+    child.on('error', (error) => {
+      reject(error);
+    });
+  });
+};
 
 // Configuración de seguridad
 app.use(helmet({
@@ -109,10 +190,23 @@ app.use('*', (req, res) => {
 });
 
 // Inicialización del servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Static CMS API running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-});
+const startServer = async () => {
+  try {
+    // Verificar y construir panel de administración si es necesario
+    await ensureAdminPanelBuilt();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Static CMS API running on port ${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+      console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+      console.log(`🎛️  Panel admin: http://localhost:${PORT}/admin`);
+    });
+  } catch (error) {
+    console.error('❌ Error iniciando servidor:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 module.exports = app; 

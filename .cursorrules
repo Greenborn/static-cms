@@ -5,7 +5,7 @@
 Este es un sistema de gestión de contenido estático (Static CMS) desarrollado en español. El proyecto está organizado en módulos independientes:
 
 - **api/**: Backend Node.js + Express con SQLite
-- **panel_admin/**: Frontend React + JavaScript + Vite
+- **panel_admin/**: Frontend JavaScript + Vite (sin React)
 - **public/**: Sitio estático generado
 - **template/**: Sistema de plantillas
 - **documentacion/**: Documentación completa
@@ -31,12 +31,12 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 - **Seguridad con Helmet, CORS, Rate Limiting**
 
 ### Frontend (Panel Admin)
-- **React 18 + JavaScript**
+- **JavaScript vanilla o framework alternativo**
 - **Vite como build tool**
 - **Tailwind CSS para estilos**
-- **React Query para estado**
-- **React Hook Form para formularios**
-- **Lucide React para iconos**
+- **Estado global con alternativas a React Query**
+- **Formularios con JavaScript vanilla**
+- **Iconos con alternativas a Lucide React**
 
 ### Base de Datos
 - **SQLite para desarrollo y producción**
@@ -119,6 +119,7 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 ### Restricciones
 - **NO usar Docker** en ningún módulo del proyecto
 - **NO usar TypeScript** en ningún módulo del proyecto
+- **NO usar React** en ningún módulo del proyecto
 - **Despliegue directo** en servidor con Node.js
 - **Configuración manual** de servicios
 
@@ -143,8 +144,8 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 - **Cobertura de código**
 
 ### Frontend
-- **Tests de componentes** con React Testing Library
-- **Tests de hooks** personalizados
+- **Tests de componentes** con alternativas a React Testing Library
+- **Tests de funciones** JavaScript
 - **Tests de integración** con API
 - **Tests E2E** (preparado)
 
@@ -214,7 +215,7 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 
 ### Componentes
 - **Reutilizables** y modulares
-- **Props documentadas** con JSDoc
+- **Parámetros documentados** con JSDoc
 - **Documentación** de uso
 - **Tests** de componentes
 
