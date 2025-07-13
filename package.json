@@ -1,0 +1,96 @@
+{
+  "name": "static-cms",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de contenido estático moderno y eficiente",
+  "main": "api/src/app.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:admin\"",
+    "dev:api": "cd api && npm run dev",
+    "dev:admin": "cd panel_admin && npm run dev",
+    "build": "npm run build:admin && npm run build:api",
+    "build:api": "cd api && npm run build",
+    "build:admin": "cd panel_admin && npm run build",
+    "start": "cd api && npm start",
+    "test": "npm run test:api && npm run test:admin",
+    "test:api": "cd api && npm test",
+    "test:admin": "cd panel_admin && npm test",
+    "lint": "npm run lint:api && npm run lint:admin",
+    "lint:api": "cd api && npm run lint",
+    "lint:admin": "cd panel_admin && npm run lint",
+    "lint:fix": "npm run lint:fix:api && npm run lint:fix:admin",
+    "lint:fix:api": "cd api && npm run lint:fix",
+    "lint:fix:admin": "cd panel_admin && npm run lint:fix",
+    "install:all": "npm install && cd api && npm install && cd ../panel_admin && npm install",
+    "clean": "npm run clean:api && npm run clean:admin",
+    "clean:api": "cd api && rm -rf node_modules dist coverage",
+    "clean:admin": "cd panel_admin && rm -rf node_modules dist coverage",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:dev": "docker-compose --profile development up -d",
+    "docker:prod": "docker-compose --profile production up -d",
+    "setup": "npm run setup:env && npm run setup:db",
+    "setup:env": "cp api/.env.example api/.env && cp panel_admin/env.example panel_admin/.env",
+    "setup:db": "cd api && npm run db:init",
+    "deploy": "npm run build && npm run docker:prod",
+    "health": "curl -f http://localhost:3000/api/health || exit 1",
+    "backup": "npm run backup:db && npm run backup:uploads",
+    "backup:db": "cd api && cp data/cms.db ../backups/cms-$(date +%Y%m%d-%H%M%S).db",
+    "backup:uploads": "tar -czf backups/uploads-$(date +%Y%m%d-%H%M%S).tar.gz api/uploads/",
+    "restore": "npm run restore:db && npm run restore:uploads",
+    "restore:db": "echo 'Restaurar base de datos desde backups/'",
+    "restore:uploads": "echo 'Restaurar uploads desde backups/'",
+    "logs": "npm run logs:api && npm run logs:admin",
+    "logs:api": "cd api && tail -f logs/app.log",
+    "logs:admin": "cd panel_admin && tail -f logs/app.log",
+    "monitor": "npm run monitor:api && npm run monitor:admin",
+    "monitor:api": "cd api && npm run monitor",
+    "monitor:admin": "cd panel_admin && npm run monitor"
+  },
+  "keywords": [
+    "cms",
+    "static-site",
+    "nodejs",
+    "react",
+    "typescript",
+    "sqlite",
+    "telegram",
+    "jwt"
+  ],
+  "author": "Static CMS Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/static-cms.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tu-usuario/static-cms/issues"
+  },
+  "homepage": "https://github.com/tu-usuario/static-cms#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+} 
