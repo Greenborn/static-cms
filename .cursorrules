@@ -5,7 +5,7 @@
 Este es un sistema de gestión de contenido estático (Static CMS) desarrollado en español. El proyecto está organizado en módulos independientes:
 
 - **api/**: Backend Node.js + Express con SQLite
-- **panel_admin/**: Frontend React + TypeScript + Vite
+- **panel_admin/**: Frontend React + JavaScript + Vite
 - **public/**: Sitio estático generado
 - **template/**: Sistema de plantillas
 - **documentacion/**: Documentación completa
@@ -31,7 +31,7 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 - **Seguridad con Helmet, CORS, Rate Limiting**
 
 ### Frontend (Panel Admin)
-- **React 18 + TypeScript**
+- **React 18 + JavaScript**
 - **Vite como build tool**
 - **Tailwind CSS para estilos**
 - **React Query para estado**
@@ -118,6 +118,7 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 
 ### Restricciones
 - **NO usar Docker** en ningún módulo del proyecto
+- **NO usar TypeScript** en ningún módulo del proyecto
 - **Despliegue directo** en servidor con Node.js
 - **Configuración manual** de servicios
 
@@ -213,7 +214,7 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 
 ### Componentes
 - **Reutilizables** y modulares
-- **Props tipadas** con TypeScript
+- **Props documentadas** con JSDoc
 - **Documentación** de uso
 - **Tests** de componentes
 
