@@ -95,7 +95,7 @@ static-cms/
 - **Linting**: ESLint + Prettier
 - **Testing**: Jest (preparado)
 - **Documentación**: Markdown
-- **Despliegue**: Docker (preparado)
+- **Despliegue**: Manual en servidor
 
 ## 📦 Instalación y Configuración
 
@@ -271,16 +271,7 @@ VITE_APP_TITLE=Static CMS Admin
 5. **Configurar SSL** con Let's Encrypt
 6. **Configurar Telegram Bot**
 
-### Opción 2: Docker (Próximamente)
 
-```bash
-# Build de imágenes
-docker build -t static-cms-api ./api
-docker build -t static-cms-admin ./panel_admin
-
-# Ejecutar contenedores
-docker-compose up -d
-```
 
 ### Configuración de Servidor Web
 

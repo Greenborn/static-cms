@@ -116,6 +116,11 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 
 ## 🚀 Despliegue
 
+### Restricciones
+- **NO usar Docker** en ningún módulo del proyecto
+- **Despliegue directo** en servidor con Node.js
+- **Configuración manual** de servicios
+
 ### Desarrollo
 - **Hot reload** para desarrollo
 - **Proxy** configurado entre frontend y backend
