@@ -338,6 +338,19 @@ El panel de administración (Vue) utiliza navegación basada en hash (`#`) para 
 - Puedes enviar cualquier `telegram_username` (o ninguno, se usará 'devadmin' por defecto).
 - Se genera un usuario de prueba y se devuelve el token JWT directamente. 
 
+## 🔐 Configuración de expiración de tokens JWT
+
+- La variable `TOKEN_EXPIRY` define cuánto tiempo es válido el token JWT emitido por el backend.
+- Debe ser una cadena reconocida por jsonwebtoken, por ejemplo: `1h`, `2h`, `3600s`.
+- Ejemplo en `.env`:
+  ```
+  TOKEN_EXPIRY=1h  # 1 hora
+  ```
+- **No debe declararse en el frontend.**
+- Si cambias este valor, reinicia el backend para que tome el nuevo tiempo de expiración.
+
+--- 
+
 ## 🏗️ Build automático del Panel de Administración
 
 Cada vez que se inicia el servidor backend (API), se ejecuta automáticamente el build del panel de administración (frontend) ubicado en `panel_admin`.
