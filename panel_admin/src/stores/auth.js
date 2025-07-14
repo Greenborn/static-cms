@@ -31,16 +31,21 @@ export const useAuthStore = () => {
       isLoading.value = true
       const response = await apiService.verifyAccess(code)
       
-      if (response.success && response.data) {
-        const { user: userData, token: tokenData } = response.data
-        
+      // Soporta ambos formatos de respuesta
+      let userData, tokenData
+      if (response.user && response.token) {
+        userData = response.user
+        tokenData = response.token
+      } else if (response.success && response.data) {
+        userData = response.data.user
+        tokenData = response.data.token
+      }
+      if (userData && tokenData) {
         localStorage.setItem('auth_token', tokenData)
         localStorage.setItem('user', JSON.stringify(userData))
-        
         user.value = userData
         token.value = tokenData
         isAuthenticated.value = true
-        
         // Actualizar el estado reactivo
         Object.assign(authState, {
           user: userData,
