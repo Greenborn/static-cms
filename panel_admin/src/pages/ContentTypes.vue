@@ -214,6 +214,8 @@
                         <option value="select">Selector</option>
                         <option value="file">Archivo</option>
                         <option value="relation">Relación</option>
+                        <option value="url">URL</option>
+                        <option value="imagen">Imagen</option>
                       </select>
                       <div v-if="getFieldError(index, 'tipo_dato')" class="invalid-feedback">{{ getFieldError(index, 'tipo_dato') }}</div>
                     </div>
@@ -327,6 +329,15 @@
                 <select v-else-if="field.tipo_dato === 'relation'" class="form-select">
                   <option value="">Seleccionar relación...</option>
                 </select>
+                
+                <!-- Campo de URL -->
+                <input v-else-if="field.tipo_dato === 'url'" type="url" class="form-control" :placeholder="field.name">
+                
+                <!-- Campo de Imagen -->
+                <div v-else-if="field.tipo_dato === 'imagen'" class="image-upload-preview">
+                  <input type="file" class="form-control" accept="image/*">
+                  <small class="form-text text-muted">Formatos soportados: JPG, PNG, GIF, WebP</small>
+                </div>
               </div>
             </div>
           </div>

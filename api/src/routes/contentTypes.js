@@ -40,7 +40,7 @@ const validateFieldsStructure = (fieldsJson) => {
         throw new Error('Cada campo debe tener nombre y tipo');
       }
 
-      const validTypes = ['text', 'textarea', 'number', 'date', 'boolean', 'select', 'file', 'relation'];
+      const validTypes = ['text', 'textarea', 'number', 'date', 'boolean', 'select', 'file', 'relation', 'url', 'imagen'];
       if (!validTypes.includes(field.type)) {
         throw new Error(`Tipo de campo inválido: ${field.type}`);
       }
