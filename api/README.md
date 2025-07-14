@@ -41,6 +41,9 @@ npm start
 ### Variables de Entorno Requeridas
 
 ```env
+# Entorno de ejecución
+ENTORNO=DEV  # DEV para desarrollo, PRD para producción
+
 # Telegram Bot Configuration
 TELEGRAM_TOKEN=your_bot_token_here
 TELEGRAM_CHAT_ID=your_chat_id_here
@@ -64,6 +67,10 @@ PUBLIC_DIR=../public
 TEMPLATE_DIR=../template
 BREAK_POINTS=320,768,1024,1440
 ```
+
+### Configuración
+
+- `GET /api/settings` - Obtener configuración global (entorno)
 
 ## Endpoints
 
