@@ -97,11 +97,13 @@
 <script>
 import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'Login',
   setup() {
     const authStore = useAuthStore()
+    const router = useRouter()
     
     const step = ref('telegram')
     const telegramId = ref('')
@@ -124,8 +126,8 @@ export default {
       try {
         error.value = ''
         await authStore.verifyCode(code.value)
-        // Redirigir al dashboard después del login exitoso
-        window.location.href = '/dashboard'
+        // Redirigir al dashboard después del login exitoso usando el router (hash mode)
+        router.push({ name: 'Dashboard' })
       } catch (err) {
         error.value = err.message || 'Error al verificar código'
       }

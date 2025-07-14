@@ -68,7 +68,7 @@ function extractResources(html, baseUrl) {
  * Genera nombre de archivo seguro
  */
 function generateSafeFilename(url, type) {
-  const parsed = url.parse(url)
+  const parsed = new URL(url)
   const pathname = parsed.pathname || '/'
   const ext = path.extname(pathname) || getDefaultExtension(type)
   const basename = path.basename(pathname, ext) || 'index'

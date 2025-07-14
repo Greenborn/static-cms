@@ -219,9 +219,8 @@ class ApiService {
   }
 
   async cloneSite(url) {
-    // Dummy: solo simula una petición exitosa
-    // Puedes cambiar la URL y lógica cuando el backend esté listo
-    return await this.api.post('/site/clone', { url })
+    // Ahora usa el endpoint real protegido para admin
+    return await this.api.post('/clone-site', { url })
   }
 }
 

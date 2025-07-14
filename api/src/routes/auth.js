@@ -55,8 +55,8 @@ router.post('/request-access', asyncHandler(async (req, res) => {
 
     if (existingUser) {
       await db.run(
-        'UPDATE users SET username = ?, first_name = ?, last_name = ?, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?',
-        [telegram_username, firstName, lastName, telegramId]
+        'UPDATE users SET username = ?, first_name = ?, last_name = ?, role = ?, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?',
+        [telegram_username, firstName, lastName, 'admin', telegramId]
       );
     } else {
       await db.run(
