@@ -181,7 +181,30 @@ router.get('/access/:token', checkTempSession, asyncHandler(async (req, res) => 
 // POST /api/auth/verify
 // Verificar token JWT y devolver información del usuario
 router.post('/verify', asyncHandler(async (req, res) => {
+  const entorno = process.env.ENTORNO || 'DEV';
   const { token } = req.body;
+
+  // En DEV, aceptar cualquier token y devolver usuario de desarrollo
+  if (entorno === 'DEV') {
+    const telegramId = 1;
+    const user = await db.get('SELECT * FROM users WHERE telegram_id = ?', [telegramId]);
+    if (!user) {
+      return res.status(401).json({ error: 'Usuario de desarrollo no encontrado' });
+    }
+    const devToken = generateToken(user);
+    return res.status(200).json({
+      user: {
+        id: user.id,
+        telegram_id: user.telegram_id,
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        role: user.role,
+        created_at: user.created_at
+      },
+      token: devToken
+    });
+  }
 
   if (!token) {
     throw createError(400, 'Token requerido');
