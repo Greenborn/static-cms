@@ -123,6 +123,31 @@ class Database {
         telegram_id INTEGER NOT NULL,
         expires_at DATETIME NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // Tabla de procesos de clonado
+      `CREATE TABLE IF NOT EXISTS clone_processes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        url TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        total_resources INTEGER DEFAULT 0,
+        processed_resources INTEGER DEFAULT 0,
+        html_file TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // Tabla de logs de clonado
+      `CREATE TABLE IF NOT EXISTS clone_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        process_id INTEGER NOT NULL,
+        resource_url TEXT,
+        resource_type TEXT,
+        status TEXT,
+        error_message TEXT,
+        file_path TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (process_id) REFERENCES clone_processes(id)
       )`
     ];
 
@@ -142,7 +167,11 @@ class Database {
       'CREATE INDEX IF NOT EXISTS idx_content_status ON content(status)',
       'CREATE INDEX IF NOT EXISTS idx_images_original ON images(original_id)',
       'CREATE INDEX IF NOT EXISTS idx_temp_sessions_token ON temp_sessions(token)',
-      'CREATE INDEX IF NOT EXISTS idx_temp_sessions_expires ON temp_sessions(expires_at)'
+      'CREATE INDEX IF NOT EXISTS idx_temp_sessions_expires ON temp_sessions(expires_at)',
+      'CREATE INDEX IF NOT EXISTS idx_clone_processes_status ON clone_processes(status)',
+      'CREATE INDEX IF NOT EXISTS idx_clone_processes_url ON clone_processes(url)',
+      'CREATE INDEX IF NOT EXISTS idx_clone_logs_process ON clone_logs(process_id)',
+      'CREATE INDEX IF NOT EXISTS idx_clone_logs_status ON clone_logs(status)'
     ];
 
     indexes.forEach((index) => {
