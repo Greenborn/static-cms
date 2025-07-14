@@ -286,3 +286,32 @@ grep "ERROR" logs/app.log
 ## Licencia
 
 MIT License - ver archivo LICENSE para más detalles. 
+
+## Panel de Administración y Assets Estáticos
+
+El backend sirve el panel de administración (frontend) generado por Vite desde:
+
+- `/admin` → Sirve la aplicación principal (SPA) desde `panel_admin/dist/index.html`.
+- `/admin/assets` → Sirve los assets estáticos (JS, CSS, imágenes) generados por Vite.
+- `/assets` → Sirve directamente los archivos estáticos generados por Vite para el panel admin, permitiendo que las rutas `/assets/archivo.js` funcionen correctamente.
+
+**Ejemplo de acceso:**
+- `http://localhost:3000/admin` → Acceso al panel de administración
+- `http://localhost:3000/assets/index-xxxxxxx.js` → Acceso a los archivos JS/CSS generados
+
+> Si tienes problemas de carga de assets, asegúrate de que el build de Vite esté actualizado y que los archivos existan en `panel_admin/dist/assets/`. 
+
+## Pruebas automáticas de entrega de archivos del panel admin
+
+En el directorio `test/` hay un script para verificar que el panel de administración y sus assets se sirvan correctamente según la variable de entorno `DOMINIO_ADMIN`:
+
+```bash
+node test/test-admin-assets.js
+```
+
+Este script:
+- Lee la variable `DOMINIO_ADMIN` de `api/.env` (ejemplo: `DOMINIO_ADMIN=http://localhost:3000`)
+- Verifica que `/admin` responda correctamente
+- Verifica que los archivos JS y CSS generados por Vite estén accesibles en `/assets`
+
+Si todo está correcto, verás un resumen de assets disponibles y el estado del panel. 
