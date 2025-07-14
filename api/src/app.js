@@ -17,6 +17,7 @@ const mediaRoutes = require('./routes/media');
 const formatterRoutes = require('./routes/formatters');
 const siteBuilderRoutes = require('./routes/siteBuilder');
 const settingsRoutes = require('./routes/settings');
+const dashboardRoutes = require('./routes/dashboard');
 
 const { errorHandler } = require('./middleware/errorHandler');
 const { authMiddleware } = require('./middleware/auth');
@@ -161,6 +162,7 @@ app.use('/api/views', authMiddleware, viewRoutes);
 app.use('/api/media', authMiddleware, mediaRoutes);
 app.use('/api/formatters', authMiddleware, formatterRoutes);
 app.use('/api/site-builder', authMiddleware, siteBuilderRoutes);
+app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
 
 // Servir el panel de administración (frontend)
