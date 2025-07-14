@@ -18,6 +18,7 @@ const formatterRoutes = require('./routes/formatters');
 const siteBuilderRoutes = require('./routes/siteBuilder');
 const settingsRoutes = require('./routes/settings');
 const dashboardRoutes = require('./routes/dashboard');
+const cloneSiteRoutes = require('./routes/cloneSite');
 
 const { errorHandler } = require('./middleware/errorHandler');
 const { authMiddleware } = require('./middleware/auth');
@@ -164,6 +165,7 @@ app.use('/api/formatters', authMiddleware, formatterRoutes);
 app.use('/api/site-builder', authMiddleware, siteBuilderRoutes);
 app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/clone-site', authMiddleware, cloneSiteRoutes);
 
 // Servir el panel de administración (frontend)
 const adminBuildPath = path.resolve(__dirname, '../../panel_admin/dist');
