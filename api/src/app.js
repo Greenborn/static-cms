@@ -24,6 +24,24 @@ const { authMiddleware } = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const ACTUALIZACION_AUTOMATICA = (process.env.ACTUALIZACION_AUTOMATICA || 'true').toLowerCase() === 'true';
+
+// Auto-actualización al iniciar
+const autoUpdate = async () => {
+  if (ACTUALIZACION_AUTOMATICA) {
+    console.log('🔄 ACTUALIZACION_AUTOMATICA: ACTIVADA. Ejecutando git pull...');
+    const { execSync } = require('child_process');
+    try {
+      const output = execSync('git pull', { encoding: 'utf8' });
+      console.log(output);
+    } catch (err) {
+      console.error('❌ Error al ejecutar git pull:', err.message);
+    }
+  } else {
+    console.log('⏸️  ACTUALIZACION_AUTOMATICA: DESACTIVADA. No se realizará git pull al iniciar.');
+  }
+};
+
 // Función para verificar y construir el panel de administración
 const ensureAdminPanelBuilt = async () => {
   const adminBuildPath = path.resolve(__dirname, '../../panel_admin/dist');
@@ -180,6 +198,7 @@ app.use('*', (req, res) => {
 // Inicialización del servidor
 const startServer = async () => {
   try {
+    await autoUpdate();
     // Verificar y construir panel de administración si es necesario
     await ensureAdminPanelBuilt();
 

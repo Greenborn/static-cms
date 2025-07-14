@@ -66,6 +66,9 @@ ALLOWED_FILE_TYPES=image/jpeg,image/png,image/gif,image/webp
 PUBLIC_DIR=../public
 TEMPLATE_DIR=../template
 BREAK_POINTS=320,768,1024,1440
+
+# Actualización automática del código al iniciar
+ACTUALIZACION_AUTOMATICA=true  # true: hace git pull al iniciar, false: no actualiza
 ```
 
 ### Configuración
