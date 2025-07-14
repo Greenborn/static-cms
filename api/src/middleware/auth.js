@@ -21,7 +21,18 @@ const authMiddleware = async (req, res, next) => {
       [decoded.telegram_id]
     );
 
+    const entorno = process.env.ENTORNO || 'DEV';
+
     if (!user) {
+      // En entorno DEV, permitir acceso si el token es válido y el rol es admin
+      if (entorno === 'DEV' && decoded.role === 'admin') {
+        req.user = {
+          telegram_id: decoded.telegram_id,
+          username: decoded.username,
+          role: decoded.role
+        };
+        return next();
+      }
       return res.status(401).json({
         error: 'Usuario no encontrado'
       });
