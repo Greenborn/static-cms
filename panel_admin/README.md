@@ -46,7 +46,7 @@ VITE_APP_TITLE=Static CMS Admin
 npm run dev
 ```
 
-El panel estará disponible en `http://localhost:3001`
+El panel estará disponible en `http://localhost:6000`
 
 ## 🏗️ Estructura del Proyecto
 

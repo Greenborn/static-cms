@@ -222,6 +222,14 @@ class ApiService {
     // Ahora usa el endpoint real protegido para admin
     return await this.api.post('/clone-site', { url })
   }
+
+  async processCloneResource(data) {
+    return await this.api.post('/clone-site/process-resource', data)
+  }
+
+  async getCloneStatus(processId) {
+    return await this.api.get(`/clone-site/status/${processId}`)
+  }
 }
 
 export default new ApiService() 
