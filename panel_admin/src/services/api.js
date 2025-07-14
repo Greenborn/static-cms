@@ -26,7 +26,8 @@ class ApiService {
         if (error.response?.status === 401) {
           localStorage.removeItem('auth_token')
           localStorage.removeItem('user')
-          window.location.href = '/login'
+          // Redirigir usando hash mode y respetando la base
+          window.location.assign('/admin/#/login')
         }
         return Promise.reject(error)
       }
@@ -40,7 +41,7 @@ class ApiService {
   }
 
   async verifyAccess(code) {
-    const response = await this.api.post('/auth/verify-access', { code })
+    const response = await this.api.post('/auth/verify', { token: code })
     return response.data
   }
 

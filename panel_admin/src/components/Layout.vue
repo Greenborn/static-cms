@@ -93,17 +93,19 @@
 <script>
 import { computed } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'Layout',
   setup() {
     const authStore = useAuthStore()
+    const router = useRouter()
     
     const user = computed(() => authStore.user.value)
 
     const logout = async () => {
       await authStore.logout()
-      window.location.href = '/login'
+      router.push({ name: 'Login' })
     }
 
     const toggleSidebar = () => {
