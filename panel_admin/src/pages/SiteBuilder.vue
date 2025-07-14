@@ -258,12 +258,13 @@ export default {
         
         const response = await apiService.cloneSite(siteUrl.value)
         console.log('Respuesta del servidor:', response)
+        console.log('response.success:', response.success)
+        console.log('response.data:', response.data)
         
-        if (response.success) {
+        if (response && response.success) {
           console.log('Análisis exitoso, configurando datos...')
           
-          // Forzar reactividad usando nextTick
-          await nextTick()
+          // Configurar datos directamente
           cloneProcess.value = {
             id: response.data.processId,
             url: siteUrl.value,
@@ -277,8 +278,16 @@ export default {
             cloneProcess: cloneProcess.value,
             resourcesCount: resources.value.length
           })
+          
+          // Verificar que los watchers se ejecuten
+          console.log('Verificando reactividad...')
+          console.log('cloneProcess.value después de asignar:', cloneProcess.value)
+          console.log('resources.value después de asignar:', resources.value.length)
         } else {
           console.error('Respuesta no exitosa:', response)
+          console.error('Tipo de response:', typeof response)
+          console.error('response.success:', response?.success)
+          console.error('response.data:', response?.data)
         }
       } catch (error) {
         console.error('Error analizando sitio:', error)

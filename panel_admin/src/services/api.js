@@ -220,7 +220,10 @@ class ApiService {
 
   async cloneSite(url) {
     // Ahora usa el endpoint real protegido para admin
-    return await this.api.post('/clone-site', { url })
+    const response = await this.api.post('/clone-site', { url })
+    console.log('API Service - Respuesta completa:', response)
+    console.log('API Service - response.data:', response.data)
+    return response.data
   }
 
   async processCloneResource(data) {
