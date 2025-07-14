@@ -487,4 +487,14 @@ router.get('/stats', asyncHandler(async (req, res) => {
   }
 }));
 
+// Clonar sitio (dummy)
+router.post('/clone', async (req, res) => {
+  const { url } = req.body
+  if (!url) {
+    return res.status(400).json({ success: false, message: 'URL requerida' })
+  }
+  // Aquí iría la lógica real de clonado
+  res.json({ success: true, message: `Sitio clonado desde ${url} (simulado)` })
+})
+
 module.exports = router; 

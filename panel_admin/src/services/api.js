@@ -217,6 +217,12 @@ class ApiService {
     const response = await this.api.get('/dashboard/stats')
     return response.data
   }
+
+  async cloneSite(url) {
+    // Dummy: solo simula una petición exitosa
+    // Puedes cambiar la URL y lógica cuando el backend esté listo
+    return await this.api.post('/site/clone', { url })
+  }
 }
 
 export default new ApiService() 
