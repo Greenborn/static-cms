@@ -27,39 +27,22 @@ const PORT = process.env.PORT || 3000;
 const ensureAdminPanelBuilt = async () => {
   const adminBuildPath = path.resolve(__dirname, '../../panel_admin/dist');
   const adminPackagePath = path.resolve(__dirname, '../../panel_admin/package.json');
-  
+
   try {
-    // Verificar si existe el directorio de build
-    const buildExists = await fs.pathExists(adminBuildPath);
+    // Verificar si package.json existe
     const packageExists = await fs.pathExists(adminPackagePath);
-    
     if (!packageExists) {
       console.log('⚠️  Panel de administración no encontrado en ../panel_admin/');
       return false;
     }
-    
-    if (!buildExists) {
-      console.log('🔨 Panel de administración no compilado. Iniciando build automático...');
-      
-      // Verificar si node_modules existe
-      const nodeModulesPath = path.resolve(__dirname, '../../panel_admin/node_modules');
-      const nodeModulesExists = await fs.pathExists(nodeModulesPath);
-      
-      if (!nodeModulesExists) {
-        console.log('📦 Instalando dependencias del panel de administración...');
-        await runCommand('npm', ['install'], '../../panel_admin');
-      }
-      
-      console.log('🏗️  Compilando panel de administración...');
-      await runCommand('npm', ['run', 'build'], '../../panel_admin');
-      
-      console.log('✅ Panel de administración compilado exitosamente');
-      return true;
-    }
-    
-    console.log('✅ Panel de administración ya está compilado');
+
+    // Siempre instalar dependencias y hacer build
+    console.log('📦 Instalando dependencias del panel de administración...');
+    await runCommand('npm', ['install'], '../../panel_admin');
+    console.log('🏗️  Compilando panel de administración...');
+    await runCommand('npm', ['run', 'build'], '../../panel_admin');
+    console.log('✅ Panel de administración compilado exitosamente');
     return true;
-    
   } catch (error) {
     console.error('❌ Error construyendo panel de administración:', error.message);
     return false;
@@ -74,20 +57,20 @@ const runCommand = (command, args, cwd) => {
       stdio: 'pipe',
       shell: true
     });
-    
+
     let output = '';
     let errorOutput = '';
-    
+
     child.stdout.on('data', (data) => {
       output += data.toString();
       console.log(`[${command}] ${data.toString().trim()}`);
     });
-    
+
     child.stderr.on('data', (data) => {
       errorOutput += data.toString();
       console.error(`[${command}] ERROR: ${data.toString().trim()}`);
     });
-    
+
     child.on('close', (code) => {
       if (code === 0) {
         resolve(output);
@@ -95,7 +78,7 @@ const runCommand = (command, args, cwd) => {
         reject(new Error(`Command failed with code ${code}: ${errorOutput}`));
       }
     });
-    
+
     child.on('error', (error) => {
       reject(error);
     });
@@ -107,7 +90,8 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
     },
@@ -116,8 +100,8 @@ app.use(helmet({
 
 // Configuración de CORS
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com'] 
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://your-domain.com']
     : ['http://localhost:8080', 'http://localhost:3000'],
   credentials: true
 }));
@@ -194,7 +178,7 @@ const startServer = async () => {
   try {
     // Verificar y construir panel de administración si es necesario
     await ensureAdminPanelBuilt();
-    
+
     app.listen(PORT, () => {
       console.log(`🚀 Static CMS API running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
