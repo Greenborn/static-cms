@@ -145,7 +145,9 @@ app.use('/api/site-builder', authMiddleware, siteBuilderRoutes);
 
 // Servir el panel de administración (frontend)
 const adminBuildPath = path.resolve(__dirname, '../../panel_admin/dist');
+const adminAssetsPath = path.resolve(__dirname, '../../panel_admin/dist/assets');
 app.use('/admin', express.static(adminBuildPath));
+app.use('/assets', express.static(adminAssetsPath));
 
 // Redirigir cualquier ruta desconocida de /admin al index.html del frontend (SPA)
 app.get('/admin/*', (req, res) => {
