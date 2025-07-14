@@ -85,8 +85,19 @@ class ApiService {
   }
 
   // Tipos de contenido
-  async getContentTypes() {
-    const response = await this.api.get('/content-types')
+  async getContentTypes(page = 1, limit = 10, search, sortBy = 'name', sortOrder = 'ASC') {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      sortBy,
+      sortOrder
+    })
+    
+    if (search) {
+      params.append('search', search)
+    }
+    
+    const response = await this.api.get(`/content-types?${params}`)
     return response.data
   }
 
