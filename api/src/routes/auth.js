@@ -31,7 +31,59 @@ const requestAccessSchema = {
 // POST /api/auth/request-access
 // Solicitar acceso temporal al panel de administración
 router.post('/request-access', asyncHandler(async (req, res) => {
+  const entorno = process.env.ENTORNO || 'DEV';
+
+  // En DEV, si no se envía telegram_username, usar 'devadmin' por defecto
+  if (entorno === 'DEV' && !req.body.telegram_username) {
+    req.body.telegram_username = 'devadmin';
+  }
+
   const { telegram_username } = validateAndSanitize(req.body, requestAccessSchema);
+
+  // Modo desarrollo: permitir login sin Telegram
+  if (entorno === 'DEV') {
+    // Usar un telegram_id fijo para desarrollo
+    const telegramId = 1;
+    const firstName = 'Dev';
+    const lastName = 'Admin';
+
+    // Crear o actualizar usuario de prueba
+    const existingUser = await db.get(
+      'SELECT * FROM users WHERE telegram_id = ?',
+      [telegramId]
+    );
+
+    if (existingUser) {
+      await db.run(
+        'UPDATE users SET username = ?, first_name = ?, last_name = ?, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?',
+        [telegram_username, firstName, lastName, telegramId]
+      );
+    } else {
+      await db.run(
+        'INSERT INTO users (telegram_id, username, first_name, last_name, role) VALUES (?, ?, ?, ?, ?)',
+        [telegramId, telegram_username, firstName, lastName, 'admin']
+      );
+    }
+
+    // Crear sesión temporal
+    const tempToken = await createTempSession(telegramId);
+
+    // Generar token JWT directamente
+    const user = await db.get('SELECT * FROM users WHERE telegram_id = ?', [telegramId]);
+    const token = generateToken(user);
+
+    return res.status(200).json({
+      message: 'Acceso de desarrollo concedido',
+      token,
+      user: {
+        telegram_id: telegramId,
+        username: telegram_username,
+        first_name: firstName,
+        last_name: lastName,
+        role: 'admin'
+      }
+    });
+  }
 
   try {
     // Verificar si el usuario existe en Telegram

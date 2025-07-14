@@ -184,10 +184,12 @@ const startServer = async () => {
     await ensureAdminPanelBuilt();
 
     app.listen(PORT, () => {
+      const entorno = process.env.ENTORNO || 'DEV';
       console.log(`🚀 Static CMS API running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
       console.log(`🎛️  Panel admin: http://localhost:${PORT}/admin`);
+      console.log(`🛠️  ENTORNO: ${entorno} (${entorno === 'DEV' ? 'Desarrollo - login sin Telegram habilitado' : 'Producción - login seguro con Telegram'})`);
     });
   } catch (error) {
     console.error('❌ Error iniciando servidor:', error);

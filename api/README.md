@@ -328,3 +328,9 @@ Si todo está correcto, verás un resumen de assets disponibles y el estado del 
 El panel de administración (Vue) utiliza navegación basada en hash (`#`) para todas las rutas internas. Esto asegura compatibilidad con el backend y evita problemas de rutas en SPAs.
 
 > Esta es una regla obligatoria definida en `.cursorrules` para todas las apps Vue o Angular del proyecto. 
+
+### Modo desarrollo (ENTORNO=DEV)
+
+- El endpoint `/api/auth/request-access` permite iniciar sesión sin Telegram.
+- Puedes enviar cualquier `telegram_username` (o ninguno, se usará 'devadmin' por defecto).
+- Se genera un usuario de prueba y se devuelve el token JWT directamente. 
