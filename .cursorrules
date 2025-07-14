@@ -273,6 +273,12 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 - **Tests** automatizados
 - **Refactoring** regular
 
+# Reglas de navegación para SPAs
+- Toda app Vue o Angular debe usar navegación basada en hash (#) para rutas internas (hash mode).
+
+# Flujo de trabajo de documentación y commits
+- Toda documentación de cambios debe realizarse antes del commit correspondiente.
+
 ---
 
 **Nota**: Estas reglas deben seguirse para mantener la consistencia y calidad del código en todo el proyecto Static CMS. 

@@ -315,3 +315,9 @@ Este script:
 - Verifica que los archivos JS y CSS generados por Vite estén accesibles en `/assets`
 
 Si todo está correcto, verás un resumen de assets disponibles y el estado del panel. 
+
+## Navegación interna del panel de administración
+
+El panel de administración (Vue) utiliza navegación basada en hash (`#`) para todas las rutas internas. Esto asegura compatibilidad con el backend y evita problemas de rutas en SPAs.
+
+> Esta es una regla obligatoria definida en `.cursorrules` para todas las apps Vue o Angular del proyecto. 
