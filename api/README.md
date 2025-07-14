@@ -337,3 +337,16 @@ El panel de administración (Vue) utiliza navegación basada en hash (`#`) para 
 - El endpoint `/api/auth/request-access` permite iniciar sesión sin Telegram.
 - Puedes enviar cualquier `telegram_username` (o ninguno, se usará 'devadmin' por defecto).
 - Se genera un usuario de prueba y se devuelve el token JWT directamente. 
+
+## 🏗️ Build automático del Panel de Administración
+
+Cada vez que se inicia el servidor backend (API), se ejecuta automáticamente el build del panel de administración (frontend) ubicado en `panel_admin`.
+
+- Se sincronizan las variables de entorno necesarias (como `DOMINIO_ADMIN`) desde el backend al frontend antes del build.
+- Se ejecuta `npm install` y luego `npm run build` en el directorio `panel_admin`.
+- Esto garantiza que el frontend siempre esté actualizado y configurado correctamente según el entorno del backend.
+- Si ocurre un error durante el build, el backend no se inicia.
+
+**No es necesario ejecutar manualmente el build del frontend.**
+
+--- 

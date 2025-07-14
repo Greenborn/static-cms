@@ -248,3 +248,13 @@ El panel está completamente optimizado para dispositivos móviles:
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles. 
+
+## 🔄 Sincronización automática y build
+
+Cuando se inicia el backend (API), se ejecuta automáticamente el build del panel de administración. Antes del build, se sincronizan variables clave como `DOMINIO_ADMIN` desde el backend al archivo `.env` del frontend.
+
+- No es necesario ejecutar manualmente el build ni la sincronización.
+- El backend se encarga de compilar y dejar listo el panel de administración en cada inicio.
+- Si hay un error en el build, el backend no se inicia.
+
+--- 

@@ -6,10 +6,12 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "prebuild": "node scripts/sync-env.cjs",
+    "build": "npm run prebuild && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext js,vue --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint . --ext js,vue --fix"
+    "lint:fix": "eslint . --ext js,vue --fix",
+    "sync-env": "node scripts/sync-env.cjs"
   },
   "dependencies": {
     "@vitejs/plugin-vue": "^4.6.2",
