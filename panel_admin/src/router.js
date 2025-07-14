@@ -12,7 +12,7 @@ import Media from './pages/Media.vue'
 import Formatters from './pages/Formatters.vue'
 import SiteBuilder from './pages/SiteBuilder.vue'
 import Settings from './pages/Settings.vue'
-import CloneSite from './pages/CloneSite.vue'
+
 
 const routes = [
   {
@@ -70,11 +70,7 @@ const routes = [
         name: 'Settings',
         component: Settings
       },
-      {
-        path: 'clone-site',
-        name: 'CloneSite',
-        component: CloneSite
-      }
+
     ]
   }
 ]

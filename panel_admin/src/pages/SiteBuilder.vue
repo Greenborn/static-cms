@@ -86,6 +86,17 @@
                 </div>
               </div>
 
+                            <!-- Debug info -->
+              <div class="alert alert-info">
+                <strong>Debug:</strong> 
+                cloneProcess: {{ cloneProcess ? 'Sí' : 'No' }}, 
+                resources.length: {{ resources.length }}, 
+                totalResources: {{ cloneProcess?.totalResources || 0 }}
+                <button class="btn btn-sm btn-outline-info ms-2" @click="debugState">
+                  Debug Estado
+                </button>
+              </div>
+              
               <!-- Lista de recursos -->
               <div v-if="resources.length > 0" class="resources-list">
                 <h6>Recursos Encontrados</h6>
@@ -215,7 +226,7 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, nextTick, watch } from 'vue'
 import apiService from '../services/api.js'
 
 export default {
@@ -243,9 +254,16 @@ export default {
       
       try {
         isAnalyzing.value = true
+        console.log('Iniciando análisis de sitio:', siteUrl.value)
+        
         const response = await apiService.cloneSite(siteUrl.value)
+        console.log('Respuesta del servidor:', response)
         
         if (response.success) {
+          console.log('Análisis exitoso, configurando datos...')
+          
+          // Forzar reactividad usando nextTick
+          await nextTick()
           cloneProcess.value = {
             id: response.data.processId,
             url: siteUrl.value,
@@ -254,6 +272,13 @@ export default {
             processedResources: 0
           }
           resources.value = response.data.resources
+          
+          console.log('Datos configurados:', {
+            cloneProcess: cloneProcess.value,
+            resourcesCount: resources.value.length
+          })
+        } else {
+          console.error('Respuesta no exitosa:', response)
         }
       } catch (error) {
         console.error('Error analizando sitio:', error)
@@ -310,9 +335,28 @@ export default {
       siteUrl.value = ''
     }
 
+    const debugState = () => {
+      console.log('=== DEBUG ESTADO ===')
+      console.log('cloneProcess:', cloneProcess.value)
+      console.log('resources:', resources.value)
+      console.log('resources.length:', resources.value.length)
+      console.log('siteUrl:', siteUrl.value)
+      console.log('isAnalyzing:', isAnalyzing.value)
+      console.log('==================')
+    }
+
     const hasPendingResources = () => {
       return resources.value.some(r => r.status === 'pending')
     }
+
+    // Watchers para debug
+    watch(cloneProcess, (newVal) => {
+      console.log('cloneProcess cambió:', newVal)
+    }, { deep: true })
+
+    watch(resources, (newVal) => {
+      console.log('resources cambió:', newVal.length, 'elementos')
+    }, { deep: true })
 
     const getProgressPercentage = () => {
       if (!cloneProcess.value || !cloneProcess.value.totalResources) return 0
@@ -389,11 +433,12 @@ export default {
       cloneProcess,
       resources,
       startBuild,
-      startCloneAnalysis,
-      processResource,
-      processAllResources,
-      resetCloneProcess,
-      hasPendingResources,
+              startCloneAnalysis,
+        processResource,
+        processAllResources,
+        resetCloneProcess,
+        debugState,
+        hasPendingResources,
       getProgressPercentage,
       getStatusClass,
       getStatusText,

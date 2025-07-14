@@ -57,12 +57,7 @@
               Configuración
             </router-link>
           </li>
-          <li class="nav-item">
-            <router-link to="/clone-site" class="nav-link" active-class="active">
-              <i class="bi bi-files me-2"></i>
-              Clonar Sitio
-            </router-link>
-          </li>
+
         </ul>
       </div>
     </nav>
