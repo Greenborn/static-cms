@@ -32,7 +32,8 @@ const contentSchema = {
   slug: {
     type: 'string',
     required: false,
-    maxLength: 200
+    maxLength: 200,
+    allowNull: true
   }
 };
 

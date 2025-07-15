@@ -169,6 +169,8 @@ app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/clone-site', authMiddleware, cloneSiteRoutes);
 
+
+
 // Servir el panel de administración (frontend)
 const adminBuildPath = path.resolve(__dirname, '../../panel_admin/dist');
 const adminAssetsPath = path.resolve(__dirname, '../../panel_admin/dist/assets');

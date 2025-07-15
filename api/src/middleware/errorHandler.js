@@ -148,7 +148,7 @@ const validateAndSanitize = (data, schema) => {
       throw createError(400, `Campo requerido faltante: ${field}`);
     }
     
-    if (data[field] !== undefined) {
+    if (data[field] !== undefined && data[field] !== null) {
       // Validar tipo
       if (config.type && typeof data[field] !== config.type) {
         throw createError(400, `Campo '${field}' debe ser de tipo ${config.type}`);
@@ -166,6 +166,12 @@ const validateAndSanitize = (data, schema) => {
       if (config.pattern && !config.pattern.test(sanitized[field])) {
         throw createError(400, `Campo '${field}' no cumple con el formato requerido`);
       }
+    } else if (data[field] === null && config.allowNull) {
+      // Permitir valores null si está configurado
+      sanitized[field] = null;
+    } else if (data[field] === null && !config.allowNull) {
+      // Si no se permite null, asignar valor por defecto o string vacío
+      sanitized[field] = config.default !== undefined ? config.default : '';
     }
   }
   
