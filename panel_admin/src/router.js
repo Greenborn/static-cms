@@ -7,6 +7,10 @@ import Layout from './components/Layout.vue'
 import Dashboard from './pages/Dashboard.vue'
 import Pages from './pages/Pages.vue'
 import ContentTypes from './pages/ContentTypes.vue'
+import Content from './pages/Content.vue'
+import ContentCreate from './pages/ContentCreate.vue'
+import ContentEdit from './pages/ContentEdit.vue'
+import ContentView from './pages/ContentView.vue'
 import Views from './pages/Views.vue'
 import Media from './pages/Media.vue'
 import Formatters from './pages/Formatters.vue'
@@ -44,6 +48,26 @@ const routes = [
         path: 'content-types',
         name: 'ContentTypes',
         component: ContentTypes
+      },
+      {
+        path: 'content',
+        name: 'Content',
+        component: Content
+      },
+      {
+        path: 'content/create',
+        name: 'ContentCreate',
+        component: ContentCreate
+      },
+      {
+        path: 'content/edit/:id',
+        name: 'ContentEdit',
+        component: ContentEdit
+      },
+      {
+        path: 'content/view/:id',
+        name: 'ContentView',
+        component: ContentView
       },
       {
         path: 'views',

@@ -28,6 +28,12 @@
             </router-link>
           </li>
           <li class="nav-item">
+            <router-link to="/content" class="nav-link" active-class="active">
+              <i class="bi bi-file-text me-2"></i>
+              Contenido
+            </router-link>
+          </li>
+          <li class="nav-item">
             <router-link to="/views" class="nav-link" active-class="active">
               <i class="bi bi-eye me-2"></i>
               Vistas

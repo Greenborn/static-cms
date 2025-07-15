@@ -121,6 +121,11 @@ class ApiService {
     return response.data
   }
 
+  async getContentTypeFields(id) {
+    const response = await this.api.get(`/content/types/${id}/fields`)
+    return response.data
+  }
+
   // Vistas
   async getViews() {
     const response = await this.api.get('/views')
@@ -243,6 +248,43 @@ class ApiService {
 
   async getCloneStatus(processId) {
     return await this.api.get(`/clone-site/status/${processId}`)
+  }
+
+  // Contenido
+  async getContent(page = 1, limit = 10, search, content_type_id, status, sortBy = 'created_at', sortOrder = 'DESC') {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      sortBy,
+      sortOrder
+    })
+    
+    if (search) params.append('search', search)
+    if (content_type_id) params.append('content_type_id', content_type_id.toString())
+    if (status) params.append('status', status)
+    
+    const response = await this.api.get(`/content?${params}`)
+    return response.data
+  }
+
+  async getContentById(id) {
+    const response = await this.api.get(`/content/${id}`)
+    return response.data
+  }
+
+  async createContent(data) {
+    const response = await this.api.post('/content', data)
+    return response.data
+  }
+
+  async updateContent(id, data) {
+    const response = await this.api.put(`/content/${id}`, data)
+    return response.data
+  }
+
+  async deleteContent(id) {
+    const response = await this.api.delete(`/content/${id}`)
+    return response.data
   }
 }
 

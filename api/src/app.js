@@ -12,6 +12,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const pageRoutes = require('./routes/pages');
 const contentTypeRoutes = require('./routes/contentTypes');
+const contentRoutes = require('./routes/content');
 const viewRoutes = require('./routes/views');
 const mediaRoutes = require('./routes/media');
 const formatterRoutes = require('./routes/formatters');
@@ -159,6 +160,7 @@ app.use('/api/auth', authRoutes);
 // Rutas protegidas
 app.use('/api/pages', authMiddleware, pageRoutes);
 app.use('/api/content-types', authMiddleware, contentTypeRoutes);
+app.use('/api/content', authMiddleware, contentRoutes);
 app.use('/api/views', authMiddleware, viewRoutes);
 app.use('/api/media', authMiddleware, mediaRoutes);
 app.use('/api/formatters', authMiddleware, formatterRoutes);
