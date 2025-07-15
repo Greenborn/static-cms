@@ -148,6 +148,13 @@ class Database {
         file_path TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (process_id) REFERENCES clone_processes(id)
+      )`,
+
+      // Tabla de breakpoints para imágenes responsivas
+      `CREATE TABLE IF NOT EXISTS breakpoints (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT UNIQUE NOT NULL,
+        valor_px INTEGER NOT NULL
       )`
     ];
 
@@ -157,6 +164,30 @@ class Database {
           console.error('Error creating table:', err.message);
         }
       });
+    });
+
+    // Insertar breakpoints por defecto si la tabla está vacía
+    this.db.get('SELECT COUNT(*) as count FROM breakpoints', (err, row) => {
+      if (err) {
+        console.error('Error verificando breakpoints:', err.message);
+        return;
+      }
+      if (row.count === 0) {
+        const defaultBreakpoints = [
+          { nombre: 'xs', valor_px: 0 },
+          { nombre: 'sm', valor_px: 576 },
+          { nombre: 'md', valor_px: 768 },
+          { nombre: 'lg', valor_px: 992 },
+          { nombre: 'xl', valor_px: 1200 },
+          { nombre: 'xxl', valor_px: 1400 }
+        ];
+        const stmt = this.db.prepare('INSERT INTO breakpoints (nombre, valor_px) VALUES (?, ?)');
+        defaultBreakpoints.forEach(bp => {
+          stmt.run(bp.nombre, bp.valor_px);
+        });
+        stmt.finalize();
+        console.log('Breakpoints por defecto insertados en la base de datos.');
+      }
     });
 
     // Crear índices para mejorar rendimiento

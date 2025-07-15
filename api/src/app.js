@@ -20,6 +20,7 @@ const siteBuilderRoutes = require('./routes/siteBuilder');
 const settingsRoutes = require('./routes/settings');
 const dashboardRoutes = require('./routes/dashboard');
 const cloneSiteRoutes = require('./routes/cloneSite');
+const breakpointsRoutes = require('./routes/breakpoints');
 
 const { errorHandler } = require('./middleware/errorHandler');
 const { authMiddleware } = require('./middleware/auth');
@@ -168,7 +169,7 @@ app.use('/api/site-builder', authMiddleware, siteBuilderRoutes);
 app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/clone-site', authMiddleware, cloneSiteRoutes);
-
+app.use('/api/breakpoints', authMiddleware, breakpointsRoutes);
 
 
 // Servir el panel de administración (frontend)

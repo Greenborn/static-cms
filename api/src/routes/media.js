@@ -2,8 +2,10 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 const { asyncHandler, createError } = require('../middleware/errorHandler');
 const { authMiddleware } = require('../middleware/auth');
+const { getBreakpointsOrdered } = require('../models/breakpoints');
 
 const router = express.Router();
 
@@ -66,9 +68,46 @@ router.post('/upload', authMiddleware, upload.single('file'), asyncHandler(async
     throw createError(400, 'No se proporcionó ningún archivo');
   }
 
-  // Crear URL relativa para el archivo
+  // Guardar imagen original (ya guardada por multer)
   const fileUrl = `/i/${req.file.filename}`;
-  
+  const originalPath = req.file.path;
+  const ext = path.extname(req.file.filename);
+  const baseName = path.basename(req.file.filename, ext);
+
+  // Procesar breakpoints
+  let breakpoints = [];
+  try {
+    breakpoints = await getBreakpointsOrdered();
+  } catch (e) {
+    // Si falla, continuar solo con la original
+    breakpoints = [];
+  }
+
+  const resizedFiles = [];
+  for (const bp of breakpoints) {
+    if (bp.valor_px > 0) {
+      const bpDir = path.join(__dirname, '../../../public/i', bp.nombre);
+      if (!fs.existsSync(bpDir)) {
+        fs.mkdirSync(bpDir, { recursive: true });
+      }
+      const resizedPath = path.join(bpDir, req.file.filename);
+      try {
+        await sharp(originalPath)
+          .resize({ width: bp.valor_px })
+          .toFile(resizedPath);
+        resizedFiles.push({
+          nombre: bp.nombre,
+          url: `/i/${bp.nombre}/${req.file.filename}`,
+          path: resizedPath,
+          width: bp.valor_px
+        });
+      } catch (err) {
+        // Si falla un breakpoint, continuar con los demás
+        console.error(`Error generando imagen para breakpoint ${bp.nombre}:`, err);
+      }
+    }
+  }
+
   // Información del archivo
   const fileInfo = {
     originalName: req.file.originalname,
@@ -76,11 +115,12 @@ router.post('/upload', authMiddleware, upload.single('file'), asyncHandler(async
     mimetype: req.file.mimetype,
     size: req.file.size,
     url: fileUrl,
-    path: req.file.path
+    path: req.file.path,
+    resized: resizedFiles
   };
 
   res.status(200).json({
-    message: 'Archivo subido exitosamente',
+    message: 'Archivo subido y optimizado exitosamente',
     url: fileUrl,
     file: fileInfo
   });
