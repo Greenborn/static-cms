@@ -101,6 +101,48 @@ const validateContentData = async (contentTypeId, dataJson) => {
   }
 };
 
+// Función para generar slugs únicos
+const generateUniqueSlug = async (title, excludeId = null) => {
+  // Generar slug base
+  let baseSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+  
+  // Si el slug está vacío, usar 'contenido'
+  if (!baseSlug) {
+    baseSlug = 'contenido';
+  }
+  
+  let slug = baseSlug;
+  let counter = 1;
+  
+  // Verificar si el slug ya existe
+  while (true) {
+    let query = 'SELECT id FROM content WHERE slug = ?';
+    let params = [slug];
+    
+    if (excludeId) {
+      query += ' AND id != ?';
+      params.push(excludeId);
+    }
+    
+    const existingContent = await db.get(query, params);
+    
+    if (!existingContent) {
+      break; // Slug único encontrado
+    }
+    
+    // Generar nuevo slug con contador
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+  
+  return slug;
+};
+
 // GET /api/content
 // Obtener lista de contenido
 router.get('/', asyncHandler(async (req, res) => {
@@ -222,24 +264,19 @@ router.post('/', asyncHandler(async (req, res) => {
   // Validar datos según el tipo de contenido
   await validateContentData(contentData.content_type_id, contentData.data);
 
-  // Generar slug si no se proporciona
+  // Generar slug único si no se proporciona
   if (!contentData.slug) {
-    contentData.slug = contentData.title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim('-');
-  }
+    contentData.slug = await generateUniqueSlug(contentData.title);
+  } else {
+    // Verificar si el slug proporcionado ya existe
+    const existingContent = await db.get(
+      'SELECT id FROM content WHERE slug = ?',
+      [contentData.slug]
+    );
 
-  // Verificar si el slug ya existe
-  const existingContent = await db.get(
-    'SELECT id FROM content WHERE slug = ?',
-    [contentData.slug]
-  );
-
-  if (existingContent) {
-    throw createError(409, 'Ya existe contenido con este slug');
+    if (existingContent) {
+      throw createError(409, 'Ya existe contenido con este slug');
+    }
   }
 
   // Insertar nuevo contenido
@@ -293,24 +330,19 @@ router.put('/:id', asyncHandler(async (req, res) => {
   // Validar datos según el tipo de contenido
   await validateContentData(contentData.content_type_id, contentData.data);
 
-  // Generar slug si no se proporciona
+  // Generar slug único si no se proporciona
   if (!contentData.slug) {
-    contentData.slug = contentData.title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim('-');
-  }
+    contentData.slug = await generateUniqueSlug(contentData.title, id);
+  } else {
+    // Verificar si el slug proporcionado ya existe en otro contenido
+    const slugExists = await db.get(
+      'SELECT id FROM content WHERE slug = ? AND id != ?',
+      [contentData.slug, id]
+    );
 
-  // Verificar si el slug ya existe en otro contenido
-  const slugExists = await db.get(
-    'SELECT id FROM content WHERE slug = ? AND id != ?',
-    [contentData.slug, id]
-  );
-
-  if (slugExists) {
-    throw createError(409, 'Ya existe otro contenido con este slug');
+    if (slugExists) {
+      throw createError(409, 'Ya existe otro contenido con este slug');
+    }
   }
 
   // Actualizar contenido

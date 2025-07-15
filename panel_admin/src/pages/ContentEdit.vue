@@ -397,10 +397,29 @@ export default {
       try {
         saving.value = true
         
+        // Procesar archivos e imágenes antes de enviar
+        const processedData = { ...form.data }
+        
+        // Procesar cada campo para detectar archivos
+        for (const [fieldName, fieldValue] of Object.entries(processedData)) {
+          if (fieldValue instanceof File) {
+            try {
+              console.log(`Subiendo archivo para campo: ${fieldName}`)
+              const uploadResponse = await apiService.uploadMedia(fieldValue)
+              processedData[fieldName] = uploadResponse.url
+              console.log(`Archivo subido exitosamente: ${uploadResponse.url}`)
+            } catch (uploadError) {
+              console.error(`Error subiendo archivo para campo ${fieldName}:`, uploadError)
+              throw new Error(`Error al subir el archivo del campo "${fieldName}": ${uploadError.message}`)
+            }
+          }
+        }
+        
         const contentData = {
           title: form.title.trim(),
           slug: form.slug.trim() || null,
-          data: JSON.stringify(form.data),
+          content_type_id: parseInt(form.content_type_id),
+          data: JSON.stringify(processedData),
           status: form.status
         }
 
@@ -410,6 +429,7 @@ export default {
         router.push('/content')
       } catch (error) {
         console.error('Error guardando contenido:', error)
+        // Aquí podrías mostrar un mensaje de error al usuario
       } finally {
         saving.value = false
       }

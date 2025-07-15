@@ -11,7 +11,7 @@ const router = express.Router();
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // Crear directorio de imágenes si no existe
-    const uploadDir = path.join(__dirname, '../../public/i');
+    const uploadDir = path.join(__dirname, '../../../public/i');
     
     // Crear directorio si no existe
     if (!fs.existsSync(uploadDir)) {
@@ -81,6 +81,7 @@ router.post('/upload', authMiddleware, upload.single('file'), asyncHandler(async
 
   res.status(200).json({
     message: 'Archivo subido exitosamente',
+    url: fileUrl,
     file: fileInfo
   });
 }));
@@ -110,7 +111,7 @@ router.post('/upload-multiple', authMiddleware, upload.array('files', 10), async
 // GET /api/media/files
 // Listar archivos en el directorio de imágenes
 router.get('/files', authMiddleware, asyncHandler(async (req, res) => {
-  const uploadDir = path.join(__dirname, '../../public/i');
+  const uploadDir = path.join(__dirname, '../../../public/i');
   
   // Crear directorio si no existe
   if (!fs.existsSync(uploadDir)) {
@@ -144,7 +145,7 @@ router.get('/files', authMiddleware, asyncHandler(async (req, res) => {
 // Eliminar archivo
 router.delete('/files/:filename', authMiddleware, asyncHandler(async (req, res) => {
   const { filename } = req.params;
-  const filePath = path.join(__dirname, '../../public/i', filename);
+  const filePath = path.join(__dirname, '../../../public/i', filename);
 
   if (!fs.existsSync(filePath)) {
     throw createError(404, 'Archivo no encontrado');
