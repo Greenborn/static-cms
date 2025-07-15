@@ -36,6 +36,7 @@ uploads/
 public/uploads/
 media/
 public/media/
+public/i/
 
 # Cache
 .cache/

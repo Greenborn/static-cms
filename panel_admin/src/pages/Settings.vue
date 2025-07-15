@@ -31,6 +31,29 @@
             </ul>
           </div>
         </div>
+        <!-- Formulario de breakpoints -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Breakpoints de Imágenes Responsivas</h5>
+          </div>
+          <div class="card-body">
+            <form @submit.prevent="saveBreakpoints">
+              <div v-if="breakpoints.length === 0" class="text-muted">Cargando breakpoints...</div>
+              <div v-else>
+                <div v-for="(bp, idx) in breakpoints" :key="bp.nombre" class="mb-3 row align-items-center">
+                  <label :for="'bp-' + bp.nombre" class="col-4 col-form-label">{{ bp.nombre.toUpperCase() }}</label>
+                  <div class="col-8">
+                    <input type="number" min="0" class="form-control" :id="'bp-' + bp.nombre" v-model.number="bp.valor_px" />
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-success btn-sm mt-2">
+                  <i class="bi bi-save me-1"></i> Guardar breakpoints
+                </button>
+                <span v-if="bpMsg" :class="['ms-2', bpMsgType === 'success' ? 'text-success' : 'text-danger']">{{ bpMsg }}</span>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
       
       <div class="col-md-6">
@@ -65,22 +88,65 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import ApiService from '../services/api'
 
 export default {
   name: 'Settings',
   setup() {
     const nodeVersion = ref('N/A')
     const environment = ref('development')
+    const breakpoints = ref([])
+    const bpMsg = ref('')
+    const bpMsgType = ref('success')
+    const api = new ApiService()
+
+    const loadBreakpoints = async () => {
+      try {
+        const res = await api.getBreakpoints()
+        breakpoints.value = res.breakpoints
+      } catch (e) {
+        bpMsg.value = 'Error cargando breakpoints'
+        bpMsgType.value = 'danger'
+      }
+    }
+
+    const saveBreakpoints = async () => {
+      bpMsg.value = ''
+      let success = true
+      for (const bp of breakpoints.value) {
+        try {
+          await api.updateBreakpoint(bp.nombre, bp.valor_px)
+        } catch (e) {
+          success = false
+        }
+      }
+      if (success) {
+        bpMsg.value = 'Breakpoints guardados correctamente'
+        bpMsgType.value = 'success'
+      } else {
+        bpMsg.value = 'Error al guardar uno o más breakpoints'
+        bpMsgType.value = 'danger'
+      }
+      loadBreakpoints()
+    }
 
     const saveSettings = () => {
       // Implementar guardado de configuración
       console.log('Save settings')
     }
 
+    onMounted(() => {
+      loadBreakpoints()
+    })
+
     return {
       nodeVersion,
       environment,
+      breakpoints,
+      bpMsg,
+      bpMsgType,
+      saveBreakpoints,
       saveSettings
     }
   }

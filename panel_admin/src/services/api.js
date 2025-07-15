@@ -286,6 +286,17 @@ class ApiService {
     const response = await this.api.delete(`/content/${id}`)
     return response.data
   }
+
+  // Breakpoints
+  async getBreakpoints() {
+    const response = await this.api.get('/breakpoints');
+    return response.data;
+  }
+
+  async updateBreakpoint(nombre, valor_px) {
+    const response = await this.api.put(`/breakpoints/${nombre}`, { valor_px });
+    return response.data;
+  }
 }
 
 export default new ApiService() 
