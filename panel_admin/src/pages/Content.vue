@@ -31,7 +31,7 @@
           </div>
           <div class="col-md-3">
             <label class="form-label">Tipo de Contenido</label>
-            <select class="form-select" v-model="selectedContentType">
+            <select class="form-select" v-model="selectedContentTypeFilter">
               <option value="">Todos los tipos</option>
               <option v-for="type in contentTypes" :key="type.id" :value="type.id">
                 {{ type.name }}
