@@ -171,3 +171,14 @@ A partir de la versión actual, el constructor de sitios realiza lo siguiente:
 - Inserta automáticamente la referencia `<link rel="stylesheet" href="/assets/css/style.min.css">` en el `<head>` del `index.html` generado.
 
 Esto garantiza que los estilos base estén siempre presentes y optimizados en el sitio generado. 
+
+## Inclusión automática de scripts.js minificado
+
+El constructor de sitios también realiza lo siguiente:
+
+- Lee el archivo `template/base/scripts.js`.
+- Minifica el JS usando Terser.
+- Guarda el resultado como `public/assets/js/scripts.min.js`.
+- Inserta automáticamente la referencia `<script src="/assets/js/scripts.min.js"></script>` antes de `</body>` en el `index.html` generado.
+
+Esto garantiza que los scripts base estén siempre presentes y optimizados en el sitio generado. 

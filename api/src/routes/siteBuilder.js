@@ -215,6 +215,19 @@ const generateSite = async () => {
       await fs.writeFile(path.join(cssOutDir, 'style.min.css'), minifiedCss);
     }
     // --- FIN INCLUSIÓN CSS ---
+    // --- INICIO INCLUSIÓN JS ---
+    // Leer y minificar scripts.js
+    const scriptsJsPath = path.join(templateDir, 'base', 'scripts.js');
+    let minifiedJs = '';
+    if (await fs.pathExists(scriptsJsPath)) {
+      const jsContent = await fs.readFile(scriptsJsPath, 'utf8');
+      minifiedJs = await minifyJS(jsContent);
+      // Guardar JS minificado en public/assets/js/scripts.min.js
+      const jsOutDir = path.join(publicDir, 'assets', 'js');
+      await fs.ensureDir(jsOutDir);
+      await fs.writeFile(path.join(jsOutDir, 'scripts.min.js'), minifiedJs);
+    }
+    // --- FIN INCLUSIÓN JS ---
     if (await fs.pathExists(indexTemplatePath)) {
       let indexTemplate = await fs.readFile(indexTemplatePath, 'utf8');
       // Insertar el link al CSS minificado antes de </head> si existe
@@ -225,6 +238,16 @@ const generateSite = async () => {
         } else {
           // Si no hay head, lo insertamos al inicio
           indexTemplate = cssLink + '\n' + indexTemplate;
+        }
+      }
+      // Insertar el script JS minificado antes de </body> si existe
+      if (minifiedJs) {
+        const jsScript = '<script src="/assets/js/scripts.min.js"></script>';
+        if (indexTemplate.includes('</body>')) {
+          indexTemplate = indexTemplate.replace('</body>', `${jsScript}\n</body>`);
+        } else {
+          // Si no hay body, lo insertamos al final
+          indexTemplate = indexTemplate + '\n' + jsScript;
         }
       }
       const indexHTML = Mustache.render(indexTemplate, templateData);
