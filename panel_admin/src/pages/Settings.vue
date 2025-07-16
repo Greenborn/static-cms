@@ -24,6 +24,10 @@
                 <label for="siteTitle" class="form-label">Título del sitio</label>
                 <input type="text" id="siteTitle" class="form-control" v-model="siteTitle" />
               </div>
+              <div class="mb-3">
+                <label for="siteLang" class="form-label">Idioma del sitio (código ISO, ej: es, en, fr)</label>
+                <input type="text" id="siteLang" class="form-control" v-model="siteLang" maxlength="5" />
+              </div>
               <button type="submit" class="btn btn-success btn-sm">
                 <i class="bi bi-save me-1"></i> Guardar título
               </button>
@@ -100,15 +104,17 @@ export default {
     const bpMsg = ref('')
     const bpMsgType = ref('success')
     const siteTitle = ref('')
+    const siteLang = ref('')
     const settingsMsg = ref('')
     const settingsMsgType = ref('success')
     const api = new ApiService()
 
-    // Cargar título del sitio
+    // Cargar título y lenguaje del sitio
     const loadSettings = async () => {
       try {
         const res = await api.api.get('/settings')
         siteTitle.value = res.data.siteTitle || ''
+        siteLang.value = res.data.lang || 'es'
       } catch (e) {
         settingsMsg.value = 'Error cargando configuración'
         settingsMsgType.value = 'danger'
@@ -119,10 +125,11 @@ export default {
       settingsMsg.value = ''
       try {
         await api.api.put('/settings/site-title', { siteTitle: siteTitle.value })
-        settingsMsg.value = 'Título guardado correctamente'
+        await api.api.put('/settings/lang', { lang: siteLang.value })
+        settingsMsg.value = 'Configuración guardada correctamente'
         settingsMsgType.value = 'success'
       } catch (e) {
-        settingsMsg.value = 'Error al guardar el título'
+        settingsMsg.value = 'Error al guardar la configuración'
         settingsMsgType.value = 'danger'
       }
     }
@@ -169,6 +176,7 @@ export default {
       bpMsg,
       bpMsgType,
       siteTitle,
+      siteLang,
       settingsMsg,
       settingsMsgType,
       saveBreakpoints,
