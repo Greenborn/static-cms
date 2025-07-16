@@ -349,7 +349,8 @@
 
 <script>
 import { ref, reactive, computed, onMounted } from 'vue'
-import apiService from '../services/api.js'
+import ApiService from '../services/api.js'
+const api = new ApiService()
 
 export default {
   name: 'ContentTypes',
@@ -397,7 +398,7 @@ export default {
     const loadContentTypes = async () => {
       try {
         loading.value = true
-        const response = await apiService.getContentTypes(
+        const response = await api.getContentTypes(
           pagination.page, 
           pagination.limit, 
           searchTerm.value,
@@ -538,9 +539,9 @@ export default {
         }
 
         if (isEditing.value) {
-          await apiService.updateContentType(form.id, contentTypeData)
+          await api.updateContentType(form.id, contentTypeData)
         } else {
-          await apiService.createContentType(contentTypeData)
+          await api.createContentType(contentTypeData)
         }
 
         showForm.value = false
@@ -560,7 +561,7 @@ export default {
       }
 
       try {
-        await apiService.deleteContentType(contentType.id)
+        await api.deleteContentType(contentType.id)
         loadContentTypes()
         // Aquí podrías mostrar un toast de éxito
       } catch (error) {

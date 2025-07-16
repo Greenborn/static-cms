@@ -269,7 +269,8 @@
 <script>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import apiService from '../services/api.js'
+import ApiService from '../services/api.js'
+const api = new ApiService()
 
 export default {
   name: 'ContentEdit',
@@ -301,7 +302,7 @@ export default {
         loading.value = true
         const contentId = route.params.id
         
-        const response = await apiService.getContentById(contentId)
+        const response = await api.getContentById(contentId)
         const contentData = response.content
         
         // Llenar formulario
@@ -330,7 +331,7 @@ export default {
       }
 
       try {
-        const response = await apiService.getContentTypeFields(form.content_type_id)
+        const response = await api.getContentTypeFields(form.content_type_id)
         selectedContentType.value = response.contentType
       } catch (error) {
         console.error('Error cargando campos del tipo de contenido:', error)
@@ -405,7 +406,7 @@ export default {
           if (fieldValue instanceof File) {
             try {
               console.log(`Subiendo archivo para campo: ${fieldName}`)
-              const uploadResponse = await apiService.uploadMedia(fieldValue)
+              const uploadResponse = await api.uploadMedia(fieldValue)
               processedData[fieldName] = uploadResponse.url
               console.log(`Archivo subido exitosamente: ${uploadResponse.url}`)
             } catch (uploadError) {
@@ -423,7 +424,7 @@ export default {
           status: form.status
         }
 
-        await apiService.updateContent(form.id, contentData)
+        await api.updateContent(form.id, contentData)
         
         // Redirigir a la lista de contenido
         router.push('/content')

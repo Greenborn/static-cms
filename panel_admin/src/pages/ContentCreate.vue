@@ -269,7 +269,8 @@
 <script>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import apiService from '../services/api.js'
+import ApiService from '../services/api.js'
+const api = new ApiService()
 
 export default {
   name: 'ContentCreate',
@@ -296,7 +297,7 @@ export default {
     // Métodos
     const loadContentTypes = async () => {
       try {
-        const response = await apiService.getContentTypes(1, 100)
+        const response = await api.getContentTypes(1, 100)
         contentTypes.value = response.contentTypes
       } catch (error) {
         console.error('Error cargando tipos de contenido:', error)
@@ -310,7 +311,7 @@ export default {
       }
 
       try {
-        const response = await apiService.getContentTypeFields(form.content_type_id)
+        const response = await api.getContentTypeFields(form.content_type_id)
         selectedContentType.value = response.contentType
         resetFormData()
       } catch (error) {
@@ -400,7 +401,7 @@ export default {
           if (fieldValue instanceof File) {
             try {
               console.log(`Subiendo archivo para campo: ${fieldName}`)
-              const uploadResponse = await apiService.uploadMedia(fieldValue)
+              const uploadResponse = await api.uploadMedia(fieldValue)
               processedData[fieldName] = uploadResponse.url
               console.log(`Archivo subido exitosamente: ${uploadResponse.url}`)
             } catch (uploadError) {
@@ -418,7 +419,7 @@ export default {
           status: form.status
         }
 
-        await apiService.createContent(contentData)
+        await api.createContent(contentData)
         
         // Redirigir a la lista de contenido
         router.push('/content')

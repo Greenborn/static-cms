@@ -227,7 +227,8 @@
 
 <script>
 import { ref, reactive, nextTick, watch } from 'vue'
-import apiService from '../services/api.js'
+import ApiService from '../services/api.js'
+const api = new ApiService()
 
 export default {
   name: 'SiteBuilder',
@@ -241,7 +242,7 @@ export default {
     const startBuild = async () => {
       try {
         isBuilding.value = true
-        await apiService.startBuild()
+        await api.startBuild()
       } catch (error) {
         console.error('Error starting build:', error)
       } finally {
@@ -256,7 +257,7 @@ export default {
         isAnalyzing.value = true
         console.log('Iniciando análisis de sitio:', siteUrl.value)
         
-        const response = await apiService.cloneSite(siteUrl.value)
+        const response = await api.cloneSite(siteUrl.value)
         console.log('Respuesta del servidor:', response)
         console.log('response.success:', response.success)
         console.log('response.data:', response.data)
@@ -302,7 +303,7 @@ export default {
         resource.processing = true
         resource.status = 'processing'
         
-        const response = await apiService.processCloneResource({
+        const response = await api.processCloneResource({
           processId: cloneProcess.value.id,
           resourceIndex: index,
           resourceUrl: resource.url,
@@ -425,7 +426,7 @@ export default {
 
     const cleanBuild = async () => {
       try {
-        await apiService.cleanBuild()
+        await api.cleanBuild()
       } catch (error) {
         console.error('Error cleaning build:', error)
       }

@@ -172,7 +172,8 @@
 <script>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import apiService from '../services/api.js'
+import ApiService from '../services/api.js'
+const api = new ApiService()
 
 export default {
   name: 'Content',
@@ -215,7 +216,7 @@ export default {
     const loadContent = async () => {
       try {
         loading.value = true
-        const response = await apiService.getContent(
+        const response = await api.getContent(
           pagination.page, 
           pagination.limit, 
           searchTerm.value,
@@ -236,7 +237,7 @@ export default {
 
     const loadContentTypes = async () => {
       try {
-        const response = await apiService.getContentTypes(1, 100)
+        const response = await api.getContentTypes(1, 100)
         contentTypes.value = response.contentTypes
       } catch (error) {
         console.error('Error cargando tipos de contenido:', error)
@@ -261,7 +262,7 @@ export default {
       }
 
       try {
-        await apiService.deleteContent(contentItem.id)
+        await api.deleteContent(contentItem.id)
         loadContent()
       } catch (error) {
         console.error('Error eliminando contenido:', error)

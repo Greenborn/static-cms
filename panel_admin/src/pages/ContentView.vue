@@ -225,7 +225,8 @@
 <script>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import apiService from '../services/api.js'
+import ApiService from '../services/api.js'
+const api = new ApiService()
 
 export default {
   name: 'ContentView',
@@ -244,7 +245,7 @@ export default {
         loading.value = true
         const contentId = route.params.id
         
-        const response = await apiService.getContentById(contentId)
+        const response = await api.getContentById(contentId)
         content.value = response.content
       } catch (error) {
         console.error('Error cargando contenido:', error)
@@ -334,7 +335,7 @@ export default {
       }
 
       try {
-        await apiService.deleteContent(content.value.id)
+        await api.deleteContent(content.value.id)
         router.push('/content')
       } catch (error) {
         console.error('Error eliminando contenido:', error)
