@@ -186,7 +186,11 @@ const generateSite = async () => {
     }
 
     // Generar página principal (index.html)
-    const indexTemplatePath = path.join(templateDir, 'templates', 'index.html');
+    let indexTemplatePath = path.join(templateDir, 'templates', 'index.html');
+    // Si no existe en templates, usar template/base/index.html
+    if (!(await fs.pathExists(indexTemplatePath))) {
+      indexTemplatePath = path.join(templateDir, 'base', 'index.html');
+    }
     if (await fs.pathExists(indexTemplatePath)) {
       const indexTemplate = await fs.readFile(indexTemplatePath, 'utf8');
       const indexHTML = Mustache.render(indexTemplate, templateData);
@@ -268,11 +272,14 @@ Disallow: /api/
 `;
 };
 
-// POST /api/site-builder/generate
-// Generar el sitio estático completo
-router.post('/generate', asyncHandler(async (req, res) => {
+/**
+ * @route POST /api/site-builder/build
+ * @desc Genera el sitio estático completo (alias de /generate)
+ * @access Privado (requiere autenticación)
+ * @returns { message, success, pages_generated, generated_at }
+ */
+router.post('/build', asyncHandler(async (req, res) => {
   const result = await generateSite();
-  
   res.status(200).json({
     message: 'Sitio generado exitosamente',
     ...result
