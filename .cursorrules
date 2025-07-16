@@ -118,7 +118,7 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 
 ### Restricciones
 - **NO usar Docker** en ningún módulo del proyecto
-- **NO usar TypeScript** en ningún módulo del proyecto
+- **NO usar TypeScript** en ningún módulo del proyecto (esta prohibido, casi que es pecado mortal)
 - **NO usar React** en ningún módulo del proyecto
 - **Despliegue directo** en servidor con Node.js
 - **Configuración manual** de servicios

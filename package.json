@@ -4,7 +4,6 @@
   "description": "Sistema de gestión de contenido estático moderno y eficiente",
   "main": "api/src/app.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:api\" \"npm run dev:admin\"",
     "dev:api": "cd api && npm run dev",
     "dev:admin": "cd panel_admin && npm run dev",
     "build": "npm run build:admin && npm run build:api",

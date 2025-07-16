@@ -183,3 +183,30 @@ npm run dev
 ```bash
 npm start
 ``` 
+
+## Servir contenido estático (directorio public)
+
+### Variable de entorno: SERVIR_CONTENIDO
+
+- **Descripción**: Permite activar o desactivar el servido de archivos estáticos generados en el directorio `public` (raíz del proyecto).
+- **Valor por defecto**: `true`
+- **Ubicación**: Archivo `.env` de la API
+
+```env
+SERVIR_CONTENIDO=true
+```
+
+Si está en `true`, la API servirá automáticamente los archivos generados en el directorio `public` (por ejemplo, `index.html`, `/pages/`, `/assets/`, etc.).
+
+### ¿Cómo probar que se está sirviendo el contenido?
+
+1. Asegúrate de tener archivos generados en el directorio `public` (por ejemplo, ejecutando el generador de sitio).
+2. Inicia la API normalmente (`npm run dev:api` o `npm start`).
+3. Accede desde tu navegador a:
+   - `http://localhost:3000/index.html` (o el puerto configurado)
+   - `http://localhost:3000/pages/tu-pagina.html`
+   - `http://localhost:3000/assets/tu-archivo.js`
+4. Si el archivo existe en `public`, debe descargarse o visualizarse directamente.
+5. Si cambias `SERVIR_CONTENIDO=false` y reinicias la API, estos archivos ya **no** serán accesibles directamente.
+
+> **Nota:** El directorio `public` es el destino de la generación estática del sitio. Si no existe o está vacío, no se servirá contenido. 

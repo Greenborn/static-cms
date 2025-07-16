@@ -183,6 +183,18 @@ app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(adminBuildPath, 'index.html'));
 });
 
+// Servir contenido estático del directorio public si SERVIR_CONTENIDO está en true
+const SERVIR_CONTENIDO = (process.env.SERVIR_CONTENIDO || 'true').toLowerCase() === 'true';
+if (SERVIR_CONTENIDO) {
+  /**
+   * Si SERVIR_CONTENIDO está activado, se sirve el contenido estático generado
+   * desde el directorio public ubicado en la raíz del proyecto.
+   */
+  const publicPath = path.resolve(__dirname, '../../public');
+  app.use(express.static(publicPath));
+  console.log('🗂️  Servir contenido público activado:', publicPath);
+}
+
 // Health check
 app.get('/health', (req, res) => {
   res.status(200).json({
