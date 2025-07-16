@@ -8,6 +8,7 @@ const { minify: terserMinify } = require('terser');
 const db = require('../config/database');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { createError } = require('../middleware/errorHandler');
+const { getTemplateSettings } = require('../models/settings');
 
 const router = express.Router();
 
@@ -75,6 +76,21 @@ const getTemplateData = async () => {
     // Obtener formateadores
     const formatters = await db.all('SELECT * FROM formatters');
 
+    // Obtener configuraciones mustacheables
+    const templateSettings = await getTemplateSettings();
+    const siteConfig = {
+      title: 'Static CMS Site',
+      description: 'Sitio generado con Static CMS',
+      url: process.env.BASE_URL || 'http://localhost:3000',
+      generated_at: new Date().toISOString()
+    };
+    // Sobrescribir/añadir settings mustacheables
+    templateSettings.forEach(item => {
+      if (item.slug) {
+        siteConfig[item.slug] = item.value;
+      }
+    });
+
     // Parsear campos JSON
     const parsedContentTypes = contentTypes.map(ct => ({
       ...ct,
@@ -97,12 +113,7 @@ const getTemplateData = async () => {
       content: parsedContent,
       images,
       formatters: parsedFormatters,
-      site: {
-        title: 'Static CMS Site',
-        description: 'Sitio generado con Static CMS',
-        url: process.env.BASE_URL || 'http://localhost:3000',
-        generated_at: new Date().toISOString()
-      }
+      site: siteConfig
     };
   } catch (error) {
     console.error('Error obteniendo datos para plantillas:', error);
@@ -191,8 +202,31 @@ const generateSite = async () => {
     if (!(await fs.pathExists(indexTemplatePath))) {
       indexTemplatePath = path.join(templateDir, 'base', 'index.html');
     }
+    // --- INICIO INCLUSIÓN CSS ---
+    // Leer y minificar style.css
+    const styleCssPath = path.join(templateDir, 'base', 'style.css');
+    let minifiedCss = '';
+    if (await fs.pathExists(styleCssPath)) {
+      const cssContent = await fs.readFile(styleCssPath, 'utf8');
+      minifiedCss = minifyCSS(cssContent);
+      // Guardar CSS minificado en public/assets/css/style.min.css
+      const cssOutDir = path.join(publicDir, 'assets', 'css');
+      await fs.ensureDir(cssOutDir);
+      await fs.writeFile(path.join(cssOutDir, 'style.min.css'), minifiedCss);
+    }
+    // --- FIN INCLUSIÓN CSS ---
     if (await fs.pathExists(indexTemplatePath)) {
-      const indexTemplate = await fs.readFile(indexTemplatePath, 'utf8');
+      let indexTemplate = await fs.readFile(indexTemplatePath, 'utf8');
+      // Insertar el link al CSS minificado antes de </head> si existe
+      if (minifiedCss) {
+        const cssLink = '<link rel="stylesheet" href="/assets/css/style.min.css">';
+        if (indexTemplate.includes('</head>')) {
+          indexTemplate = indexTemplate.replace('</head>', `${cssLink}\n</head>`);
+        } else {
+          // Si no hay head, lo insertamos al inicio
+          indexTemplate = cssLink + '\n' + indexTemplate;
+        }
+      }
       const indexHTML = Mustache.render(indexTemplate, templateData);
       const minifiedIndex = minifyHTML(indexHTML);
       await fs.writeFile(path.join(publicDir, 'index.html'), minifiedIndex);
