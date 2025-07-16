@@ -1,0 +1,199 @@
+openapi: 3.0.0
+info:
+  title: API Multimedia Static CMS
+  version: 1.0.0
+  description: |
+    Endpoints para gestión de archivos multimedia y categorías (carpetas virtuales) en el CMS.
+servers:
+  - url: /api
+paths:
+  /media/categories:
+    get:
+      summary: Listar categorías de archivos multimedia
+      tags: [Multimedia]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de categorías
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MediaCategory'
+    post:
+      summary: Crear nueva categoría
+      tags: [Multimedia]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Categoría creada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  category:
+                    $ref: '#/components/schemas/MediaCategory'
+  /media/categories/{id}:
+    delete:
+      summary: Eliminar categoría
+      tags: [Multimedia]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Categoría eliminada
+  /media/files:
+    get:
+      summary: Listar archivos multimedia (opcionalmente por categoría)
+      tags: [Multimedia]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: category_id
+          schema:
+            type: integer
+          description: ID de la categoría
+      responses:
+        '200':
+          description: Lista de archivos multimedia
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MediaFile'
+  /media/upload:
+    post:
+      summary: Subir archivo multimedia con categoría
+      tags: [Multimedia]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                category_id:
+                  type: integer
+      responses:
+        '200':
+          description: Archivo subido exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file:
+                    $ref: '#/components/schemas/MediaFile'
+  /media/files/{id}:
+    patch:
+      summary: Cambiar la categoría de un archivo multimedia
+      tags: [Multimedia]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_id:
+                  type: integer
+      responses:
+        '200':
+          description: Categoría actualizada
+    delete:
+      summary: Eliminar archivo multimedia
+      tags: [Multimedia]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Archivo eliminado
+components:
+  schemas:
+    MediaCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    MediaFile:
+      type: object
+      properties:
+        id:
+          type: integer
+        filename:
+          type: string
+        original_name:
+          type: string
+        mimetype:
+          type: string
+        size:
+          type: integer
+        url:
+          type: string
+        category_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT 

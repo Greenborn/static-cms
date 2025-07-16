@@ -165,6 +165,28 @@ class Database {
         category TEXT DEFAULT 'General',
         is_template_item BOOLEAN DEFAULT 0,
         slug TEXT
+      )`,
+
+      // Tabla de categorías de multimedia
+      `CREATE TABLE IF NOT EXISTS media_categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // Tabla de archivos multimedia
+      `CREATE TABLE IF NOT EXISTS media_files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT NOT NULL,
+        original_name TEXT,
+        mimetype TEXT,
+        size INTEGER,
+        url TEXT,
+        category_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES media_categories(id)
       )`
     ];
 

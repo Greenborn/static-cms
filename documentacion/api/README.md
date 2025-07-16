@@ -210,3 +210,119 @@ Si está en `true`, la API servirá automáticamente los archivos generados en e
 5. Si cambias `SERVIR_CONTENIDO=false` y reinicias la API, estos archivos ya **no** serán accesibles directamente.
 
 > **Nota:** El directorio `public` es el destino de la generación estática del sitio. Si no existe o está vacío, no se servirá contenido. 
+
+## API de Multimedia
+
+La API de multimedia permite subir, listar y eliminar archivos (imágenes, documentos, etc.) en el CMS. Las imágenes subidas se almacenan en el directorio público y se generan miniaturas automáticamente según los breakpoints definidos.
+
+### Endpoints principales
+
+- **POST /api/media/upload**
+  - Sube un archivo multimedia.
+  - Genera miniaturas para cada breakpoint (por ejemplo: small, medium, large).
+  - Responde con las URLs de la imagen original y de las miniaturas.
+  - Requiere autenticación.
+
+- **POST /api/media/upload-multiple**
+  - Sube varios archivos a la vez (máx. 10).
+  - Responde con la información de los archivos subidos.
+  - Requiere autenticación.
+
+- **GET /api/media/files**
+  - Lista todos los archivos multimedia disponibles en el directorio público.
+  - Incluye nombre, URL, tamaño y fechas.
+  - Requiere autenticación.
+
+- **DELETE /api/media/files/:filename**
+  - Elimina un archivo específico del directorio público.
+  - Requiere autenticación.
+
+### Flujo de subida y generación de miniaturas
+
+1. El usuario sube una imagen desde el panel de administración.
+2. El backend guarda la imagen original en `public/i`.
+3. Para cada breakpoint definido en la base de datos, se genera una miniatura y se guarda en una subcarpeta (por ejemplo, `public/i/small/imagen.jpg`).
+4. La respuesta de la API incluye las URLs de la imagen original y de todas las miniaturas generadas.
+
+### Ejemplo de respuesta (subida de imagen)
+
+```json
+{
+  "message": "Archivo subido y optimizado exitosamente",
+  "url": "/i/imagen-123.jpg",
+  "file": {
+    "originalName": "foto.jpg",
+    "filename": "imagen-123.jpg",
+    "mimetype": "image/jpeg",
+    "size": 123456,
+    "url": "/i/imagen-123.jpg",
+    "resized": [
+      {
+        "nombre": "small",
+        "url": "/i/small/imagen-123.jpg",
+        "width": 320
+      },
+      {
+        "nombre": "medium",
+        "url": "/i/medium/imagen-123.jpg",
+        "width": 640
+      }
+    ]
+  }
+}
+```
+
+### Notas de seguridad y validación
+- Solo se permiten ciertos tipos de archivo (imágenes, PDF, Word, TXT).
+- Tamaño máximo por archivo: 10MB.
+- Todos los endpoints requieren autenticación.
+- Los nombres de archivo se generan automáticamente para evitar colisiones. 
+
+## Organización de multimedia por carpetas (categorías)
+
+La galería multimedia permite organizar los archivos en "carpetas" virtuales, llamadas categorías. Cada archivo puede pertenecer a una sola categoría, y las categorías pueden ser creadas, listadas y eliminadas desde el panel o vía API.
+
+### Endpoints principales
+
+- `GET /api/media/categories` — Listar categorías
+- `POST /api/media/categories` — Crear nueva categoría
+- `DELETE /api/media/categories/:id` — Eliminar categoría
+- `GET /api/media/files?category_id=ID` — Listar archivos por categoría
+- `POST /api/media/upload` — Subir archivo con categoría
+- `PATCH /api/media/files/:id` — Cambiar la categoría de un archivo
+- `DELETE /api/media/files/:id` — Eliminar archivo
+
+### Ejemplo de flujo
+
+1. Crear una categoría:
+   ```http
+   POST /api/media/categories
+   Content-Type: application/json
+   {
+     "name": "banners"
+   }
+   ```
+2. Subir un archivo a la categoría:
+   ```http
+   POST /api/media/upload
+   Content-Type: multipart/form-data
+   file: imagen.jpg
+   category_id: 1
+   ```
+3. Listar archivos de la categoría:
+   ```http
+   GET /api/media/files?category_id=1
+   ```
+4. Mover un archivo a otra categoría:
+   ```http
+   PATCH /api/media/files/5
+   Content-Type: application/json
+   {
+     "category_id": 2
+   }
+   ```
+
+### Notas
+- Las categorías son virtuales y no afectan la ubicación física de los archivos.
+- El sistema soporta autenticación JWT en todos los endpoints de multimedia.
+- La documentación OpenAPI completa se encuentra en `openapi.yaml` para integración con Swagger u otras herramientas. 

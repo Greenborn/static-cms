@@ -37,7 +37,16 @@ async function setSetting(key, value, description = null, category = 'General', 
   );
 }
 
+/**
+ * Obtiene todas las configuraciones que deben incluirse en el template (is_template_item = true)
+ * @returns {Promise<Array>} Lista de configuraciones { key, value, slug }
+ */
+async function getTemplateSettings() {
+  return db.all('SELECT key, value, slug FROM settings WHERE is_template_item = 1');
+}
+
 module.exports = {
   getSetting,
-  setSetting
+  setSetting,
+  getTemplateSettings
 }; 
