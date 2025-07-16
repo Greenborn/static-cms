@@ -182,3 +182,14 @@ El constructor de sitios también realiza lo siguiente:
 - Inserta automáticamente la referencia `<script src="/assets/js/scripts.min.js"></script>` antes de `</body>` en el `index.html` generado.
 
 Esto garantiza que los scripts base estén siempre presentes y optimizados en el sitio generado. 
+
+## Copia, mustacheo y minificación de archivos HTML base
+
+Durante la construcción del sitio, el sistema:
+
+- Toma todos los archivos `.html` ubicados en `template/base` (excepto `index.html`).
+- Procesa cada archivo con Mustache (`Mustache.render`) usando los datos dinámicos (`templateData`).
+- Minifica el HTML resultante.
+- Copia el archivo final al directorio público (`public/`).
+
+Esto permite tener archivos base reutilizables, optimizados y personalizados según la configuración y datos del sitio. 

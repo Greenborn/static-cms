@@ -160,6 +160,24 @@ const generateSite = async () => {
     await copyStaticFiles(path.join(templateDir, 'assets'), path.join(publicDir, 'assets'));
     await copyStaticFiles(path.join(templateDir, 'static'), publicDir);
 
+    // Copiar y minificar todos los .html de template/base al directorio público
+    const baseHtmlDir = path.join(templateDir, 'base');
+    const publicHtmlDir = publicDir;
+    if (await fs.pathExists(baseHtmlDir)) {
+      const files = await fs.readdir(baseHtmlDir);
+      for (const file of files) {
+        if (file.endsWith('.html') && file !== 'index.html') {
+          const srcPath = path.join(baseHtmlDir, file);
+          const destPath = path.join(publicHtmlDir, file);
+          const htmlContent = await fs.readFile(srcPath, 'utf8');
+          const rendered = Mustache.render(htmlContent, templateData);
+          const minified = minifyHTML(rendered);
+          await fs.writeFile(destPath, minified);
+          console.log(`✅ Archivo base mustacheado, copiado y minificado: ${file}`);
+        }
+      }
+    }
+
     // Generar páginas
     for (const page of templateData.pages) {
       try {
