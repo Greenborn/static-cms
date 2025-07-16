@@ -59,7 +59,7 @@ const ensureAdminPanelBuilt = async () => {
       return false;
     }
 
-    // Siempre instalar dependencias y hacer build
+    // Siempre instalar dependencias y hacer build al iniciar el servidor
     console.log('📦 Instalando dependencias del panel de administración...');
     await runCommand('npm', ['install'], '../../panel_admin');
     console.log('🏗️  Compilando panel de administración...');

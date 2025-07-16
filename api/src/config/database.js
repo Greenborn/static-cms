@@ -155,6 +155,16 @@ class Database {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT UNIQUE NOT NULL,
         valor_px INTEGER NOT NULL
+      )`,
+
+      // Tabla de configuraciones globales
+      `CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT,
+        description TEXT,
+        category TEXT DEFAULT 'General',
+        is_template_item BOOLEAN DEFAULT 0,
+        slug TEXT
       )`
     ];
 
@@ -188,6 +198,32 @@ class Database {
         stmt.finalize();
         console.log('Breakpoints por defecto insertados en la base de datos.');
       }
+    });
+
+    // Migración automática de la tabla settings para agregar nuevas columnas si no existen
+    this.db.serialize(() => {
+      this.db.all("PRAGMA table_info(settings)", (err, columns) => {
+        if (err) {
+          console.error('Error verificando columnas de settings:', err.message);
+          return;
+        }
+        const colNames = columns.map(col => col.name);
+        if (!colNames.includes('category')) {
+          this.db.run("ALTER TABLE settings ADD COLUMN category TEXT DEFAULT 'General'", (err) => {
+            if (!err) console.log('Columna category agregada a settings');
+          });
+        }
+        if (!colNames.includes('is_template_item')) {
+          this.db.run("ALTER TABLE settings ADD COLUMN is_template_item BOOLEAN DEFAULT 0", (err) => {
+            if (!err) console.log('Columna is_template_item agregada a settings');
+          });
+        }
+        if (!colNames.includes('slug')) {
+          this.db.run("ALTER TABLE settings ADD COLUMN slug TEXT", (err) => {
+            if (!err) console.log('Columna slug agregada a settings');
+          });
+        }
+      });
     });
 
     // Crear índices para mejorar rendimiento

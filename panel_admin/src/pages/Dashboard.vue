@@ -164,7 +164,9 @@
 
 <script>
 import { ref, onMounted } from 'vue'
-import apiService from '../services/api.js'
+import ApiService from '../services/api.js'
+
+const api = new ApiService()
 
 export default {
   name: 'Dashboard',
@@ -175,7 +177,7 @@ export default {
 
     const loadStats = async () => {
       try {
-        const response = await apiService.getDashboardStats()
+        const response = await api.getDashboardStats()
         if (response.success) {
           stats.value = response.data
         }
@@ -187,7 +189,7 @@ export default {
     const startBuild = async () => {
       try {
         isBuilding.value = true
-        await apiService.startBuild()
+        await api.startBuild()
         // Recargar stats después de la construcción
         await loadStats()
       } catch (error) {

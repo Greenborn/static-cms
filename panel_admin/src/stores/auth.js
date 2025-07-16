@@ -1,5 +1,7 @@
 import { reactive, ref } from 'vue'
-import apiService from '../services/api.js'
+import ApiService from '../services/api.js'
+
+const api = new ApiService()
 
 export const useAuthStore = () => {
   const user = ref(null)
@@ -17,7 +19,7 @@ export const useAuthStore = () => {
   const login = async (telegramId) => {
     try {
       isLoading.value = true
-      await apiService.requestAccess(telegramId)
+      await api.requestAccess(telegramId)
     } catch (error) {
       console.error('Error requesting access:', error)
       throw error
@@ -29,7 +31,7 @@ export const useAuthStore = () => {
   const verifyCode = async (code) => {
     try {
       isLoading.value = true
-      const response = await apiService.verifyAccess(code)
+      const response = await api.verifyAccess(code)
       
       // Soporta ambos formatos de respuesta
       let userData, tokenData
@@ -67,7 +69,7 @@ export const useAuthStore = () => {
   const logout = async () => {
     try {
       if (token.value) {
-        await apiService.logout()
+        await api.logout()
       }
     } catch (error) {
       console.error('Error during logout:', error)
@@ -91,7 +93,7 @@ export const useAuthStore = () => {
 
   const refreshUser = async () => {
     try {
-      const response = await apiService.getProfile()
+      const response = await api.getProfile()
       if (response.success && response.data) {
         const userData = response.data
         localStorage.setItem('user', JSON.stringify(userData))

@@ -19,16 +19,16 @@
             <h5 class="card-title mb-0">Configuración General</h5>
           </div>
           <div class="card-body">
-            <p class="text-muted">Funcionalidad de configuración en desarrollo...</p>
-            <p>Aquí se implementará:</p>
-            <ul>
-              <li>Configuración del sitio</li>
-              <li>Configuración de Telegram Bot</li>
-              <li>Configuración de base de datos</li>
-              <li>Configuración de build</li>
-              <li>Configuración de seguridad</li>
-              <li>Backup y restauración</li>
-            </ul>
+            <form @submit.prevent="saveSettings">
+              <div class="mb-3">
+                <label for="siteTitle" class="form-label">Título del sitio</label>
+                <input type="text" id="siteTitle" class="form-control" v-model="siteTitle" />
+              </div>
+              <button type="submit" class="btn btn-success btn-sm">
+                <i class="bi bi-save me-1"></i> Guardar título
+              </button>
+              <span v-if="settingsMsg" :class="['ms-2', settingsMsgType === 'success' ? 'text-success' : 'text-danger']">{{ settingsMsg }}</span>
+            </form>
           </div>
         </div>
         <!-- Formulario de breakpoints -->
@@ -99,7 +99,33 @@ export default {
     const breakpoints = ref([])
     const bpMsg = ref('')
     const bpMsgType = ref('success')
+    const siteTitle = ref('')
+    const settingsMsg = ref('')
+    const settingsMsgType = ref('success')
     const api = new ApiService()
+
+    // Cargar título del sitio
+    const loadSettings = async () => {
+      try {
+        const res = await api.api.get('/settings')
+        siteTitle.value = res.data.siteTitle || ''
+      } catch (e) {
+        settingsMsg.value = 'Error cargando configuración'
+        settingsMsgType.value = 'danger'
+      }
+    }
+
+    const saveSettings = async () => {
+      settingsMsg.value = ''
+      try {
+        await api.api.put('/settings/site-title', { siteTitle: siteTitle.value })
+        settingsMsg.value = 'Título guardado correctamente'
+        settingsMsgType.value = 'success'
+      } catch (e) {
+        settingsMsg.value = 'Error al guardar el título'
+        settingsMsgType.value = 'danger'
+      }
+    }
 
     const loadBreakpoints = async () => {
       try {
@@ -131,12 +157,8 @@ export default {
       loadBreakpoints()
     }
 
-    const saveSettings = () => {
-      // Implementar guardado de configuración
-      console.log('Save settings')
-    }
-
     onMounted(() => {
+      loadSettings()
       loadBreakpoints()
     })
 
@@ -146,6 +168,9 @@ export default {
       breakpoints,
       bpMsg,
       bpMsgType,
+      siteTitle,
+      settingsMsg,
+      settingsMsgType,
       saveBreakpoints,
       saveSettings
     }
