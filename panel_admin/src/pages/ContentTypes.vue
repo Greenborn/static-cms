@@ -283,67 +283,39 @@
     </div>
 
     <!-- Modal de vista previa -->
-    <div class="modal fade" id="previewModal" tabindex="-1">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Vista previa: {{ form.name }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <div class="preview-form">
-              <div v-for="field in form.fields" :key="field.name" class="mb-3">
-                <label class="form-label">
-                  {{ field.name }}
-                  <span v-if="field.required" class="text-danger">*</span>
-                </label>
-                
-                <!-- Campo de texto -->
-                <input v-if="field.tipo_dato === 'text'" type="text" class="form-control" :placeholder="field.name">
-                
-                <!-- Campo de texto largo -->
-                <textarea v-else-if="field.tipo_dato === 'textarea'" class="form-control" rows="3" :placeholder="field.name"></textarea>
-                
-                <!-- Campo numérico -->
-                <input v-else-if="field.tipo_dato === 'number'" type="number" class="form-control" :placeholder="field.name">
-                
-                <!-- Campo de fecha -->
-                <input v-else-if="field.tipo_dato === 'date'" type="date" class="form-control">
-                
-                <!-- Campo booleano -->
-                <div v-else-if="field.tipo_dato === 'boolean'" class="form-check">
-                  <input class="form-check-input" type="checkbox" :id="'preview-' + field.name">
-                  <label class="form-check-label" :for="'preview-' + field.name">{{ field.name }}</label>
-                </div>
-                
-                <!-- Campo select -->
-                <select v-else-if="field.tipo_dato === 'select'" class="form-select">
-                  <option value="">Seleccionar...</option>
-                  <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
-                </select>
-                
-                <!-- Campo de archivo -->
-                <input v-else-if="field.tipo_dato === 'file'" type="file" class="form-control">
-                
-                <!-- Campo de relación -->
-                <select v-else-if="field.tipo_dato === 'relation'" class="form-select">
-                  <option value="">Seleccionar relación...</option>
-                </select>
-                
-                <!-- Campo de URL -->
-                <input v-else-if="field.tipo_dato === 'url'" type="url" class="form-control" :placeholder="field.name">
-                
-                <!-- Campo de Imagen -->
-                <div v-else-if="field.tipo_dato === 'imagen'" class="image-upload-preview">
-                  <input type="file" class="form-control" accept="image/*">
-                  <small class="form-text text-muted">Formatos soportados: JPG, PNG, GIF, WebP</small>
-                </div>
-              </div>
+    <Modal
+      :visible="showPreviewModal"
+      :title="'Vista previa: ' + form.name"
+      :z-index="2000"
+      :backdrop-z-index="1990"
+      size="modal-lg"
+      @close="showPreviewModal = false"
+    >
+      <template #default>
+        <div class="preview-form">
+          <div v-for="field in form.fields" :key="field.name" class="mb-3">
+            <label class="form-label">
+              {{ field.name }}
+              <span v-if="field.required" class="text-danger">*</span>
+            </label>
+            <input v-if="field.tipo_dato === 'text'" type="text" class="form-control" :placeholder="field.name">
+            <textarea v-else-if="field.tipo_dato === 'textarea'" class="form-control" rows="3" :placeholder="field.name"></textarea>
+            <input v-else-if="field.tipo_dato === 'number'" type="number" class="form-control" :placeholder="field.name">
+            <input v-else-if="field.tipo_dato === 'date'" type="date" class="form-control">
+            <div v-else-if="field.tipo_dato === 'boolean'" class="form-check">
+              <input class="form-check-input" type="checkbox" :id="'preview-' + field.name">
+              <label class="form-check-label" :for="'preview-' + field.name">{{ field.name }}</label>
             </div>
+            <select v-else-if="field.tipo_dato === 'select'" class="form-select">
+              <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
+            </select>
           </div>
         </div>
-      </div>
-    </div>
+      </template>
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showPreviewModal = false">Cerrar</button>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -351,6 +323,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import ApiService from '../services/api.js'
 const api = new ApiService()
+import Modal from '../components/Modal.vue'
 
 export default {
   name: 'ContentTypes',
@@ -365,6 +338,7 @@ export default {
     const sortBy = ref('name')
     const errors = ref({})
     const fieldErrors = ref({})
+    const showPreviewModal = ref(false)
 
     // Paginación
     const pagination = reactive({
@@ -576,9 +550,7 @@ export default {
     }
 
     const previewContentType = () => {
-      // Mostrar modal de vista previa
-      const modal = new bootstrap.Modal(document.getElementById('previewModal'))
-      modal.show()
+      showPreviewModal.value = true
     }
 
     const viewContentType = (contentType) => {
@@ -632,7 +604,8 @@ export default {
       cancelForm,
       previewContentType,
       viewContentType,
-      formatDate
+      formatDate,
+      showPreviewModal
     }
   }
 }

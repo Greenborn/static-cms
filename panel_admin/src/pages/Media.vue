@@ -65,85 +65,71 @@
     </div>
 
     <!-- Modal nueva categoría -->
-    <div
-      class="modal fade show"
-      tabindex="-1"
-      style="display: block; z-index: 1055;"
-      v-if="showNewCategory"
-      @click.self="showNewCategory = false"
+    <Modal
+      :visible="showNewCategory"
+      title="Nueva categoría"
+      :z-index="2100"
+      :backdrop-z-index="2090"
+      size=""
+      @close="showNewCategory = false"
     >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Nueva categoría</h5>
-            <button type="button" class="btn-close" @click="showNewCategory = false"></button>
-          </div>
-          <div class="modal-body">
-            <input v-model="newCategoryName" class="form-control" placeholder="Nombre de la categoría" />
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showNewCategory = false">Cancelar</button>
-            <button type="button" class="btn btn-primary" @click="createCategory">Crear</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Backdrop -->
-    <div
-      class="modal-backdrop fade show"
-      v-if="showNewCategory"
-      style="z-index: 1050;"
-    ></div>
+      <template #default>
+        <input v-model="newCategoryName" class="form-control mb-3" placeholder="Nombre de la categoría" />
+      </template>
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showNewCategory = false">Cancelar</button>
+        <button type="button" class="btn btn-primary" @click="createCategory">Crear</button>
+      </template>
+    </Modal>
 
     <!-- Modal de detalles de imagen -->
-    <div class="modal fade show" tabindex="-1" style="display: block; z-index: 2000;" v-if="showImageModal" @click.self="closeImageModal">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Detalles de la imagen</h5>
-            <button type="button" class="btn-close" @click="closeImageModal"></button>
+    <Modal
+      :visible="showImageModal"
+      title="Detalles de la imagen"
+      :z-index="2000"
+      :backdrop-z-index="1990"
+      size="modal-lg"
+      @close="closeImageModal"
+    >
+      <template #default>
+        <div v-if="selectedImage">
+          <div class="text-center mb-3">
+            <img :src="getPreviewUrl(selectedImage, false)" class="img-fluid rounded" style="max-height:320px;object-fit:contain;" />
           </div>
-          <div class="modal-body">
-            <div v-if="selectedImage">
-              <div class="text-center mb-3">
-                <img :src="getPreviewUrl(selectedImage, false)" class="img-fluid rounded" style="max-height:320px;object-fit:contain;" />
-              </div>
-              <div class="mb-2"><strong>Nombre original:</strong> {{ selectedImage.original_name }}</div>
-              <div class="mb-2"><strong>Tamaño:</strong> {{ formatSize(selectedImage.size) }}</div>
-              <div class="mb-2"><strong>MIME:</strong> {{ selectedImage.mimetype }}</div>
-              <div class="mb-2"><strong>Fecha de subida:</strong> {{ selectedImage.created_at || '-' }}</div>
-              <div class="mb-3"><strong>Categoría:</strong> {{ selectedImage.category_id || '-' }}</div>
-              <div>
-                <strong>Miniaturas generadas:</strong>
-                <ul v-if="thumbnails.length">
-                  <li v-for="thumb in thumbnails" :key="thumb.nombre">
-                    <span class="badge bg-secondary me-2">{{ thumb.nombre }}</span>
-                    <span>{{ thumb.width }}px</span>
-                    <img :src="thumb.url" class="ms-2 rounded border" style="max-height:48px;max-width:80px;object-fit:contain;vertical-align:middle;" />
-                  </li>
-                </ul>
-                <div v-else class="text-muted">No hay miniaturas generadas.
-                  <button class="btn btn-sm btn-primary ms-2" @click="generateThumbnails" :disabled="generatingThumbs">
-                    <span v-if="generatingThumbs"><span class="spinner-border spinner-border-sm"></span> Generando...</span>
-                    <span v-else>Generar miniaturas</span>
-                  </button>
-                </div>
-              </div>
+          <div class="mb-2"><strong>Nombre original:</strong> {{ selectedImage.original_name }}</div>
+          <div class="mb-2"><strong>Tamaño:</strong> {{ formatSize(selectedImage.size) }}</div>
+          <div class="mb-2"><strong>MIME:</strong> {{ selectedImage.mimetype }}</div>
+          <div class="mb-2"><strong>Fecha de subida:</strong> {{ selectedImage.created_at || '-' }}</div>
+          <div class="mb-3"><strong>Categoría:</strong> {{ selectedImage.category_id || '-' }}</div>
+          <div>
+            <strong>Miniaturas generadas:</strong>
+            <ul v-if="thumbnails.length">
+              <li v-for="thumb in thumbnails" :key="thumb.nombre">
+                <span class="badge bg-secondary me-2">{{ thumb.nombre }}</span>
+                <span>{{ thumb.width }}px</span>
+                <img :src="thumb.url" class="ms-2 rounded border" style="max-height:48px;max-width:80px;object-fit:contain;vertical-align:middle;" />
+              </li>
+            </ul>
+            <div v-else class="text-muted">No hay miniaturas generadas.
+              <button class="btn btn-sm btn-primary ms-2" @click="generateThumbnails" :disabled="generatingThumbs">
+                <span v-if="generatingThumbs"><span class="spinner-border spinner-border-sm"></span> Generando...</span>
+                <span v-else>Generar miniaturas</span>
+              </button>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeImageModal">Cerrar</button>
-          </div>
         </div>
-      </div>
-      <div class="modal-backdrop fade show" style="z-index: 1990;"></div>
-    </div>
+      </template>
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="closeImageModal">Cerrar</button>
+      </template>
+    </Modal>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import ApiService from '../services/api.js'
+import Modal from '../components/Modal.vue'
 const api = new ApiService()
 
 const categories = ref([])
