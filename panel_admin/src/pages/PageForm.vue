@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="onSubmit">
+  <form>
     <div class="mb-3">
       <label class="form-label">Título</label>
       <input type="text" class="form-control" v-model="form.title" required />
@@ -21,11 +21,6 @@
       <Editor v-model="form.content" :preview-data="previewData" />
     </div>
     <div v-if="msg" :class="['alert', msgType === 'success' ? 'alert-success' : 'alert-danger']">{{ msg }}</div>
-    <div class="d-flex justify-content-end gap-2">
-      <button type="button" class="btn btn-secondary" @click="$emit('cancel')">Cancelar</button>
-      <button v-if="msgType === 'success'" type="button" class="btn btn-success" @click="$emit('saved')">Cerrar</button>
-      <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? 'Guardando...' : (msgType === 'success' ? 'Guardado' : 'Guardar') }}</button>
-    </div>
   </form>
 </template>
 <script setup>
@@ -34,7 +29,7 @@ import ApiService from '../services/api.js'
 import Editor from '../components/Editor.vue'
 const api = new ApiService()
 const props = defineProps({ page: { type: Object, default: null } })
-const emit = defineEmits(['saved', 'cancel'])
+const emit = defineEmits(['saved', 'cancel', 'save'])
 const form = reactive({
   title: '',
   slug: '',
@@ -71,7 +66,8 @@ const onSubmit = async () => {
       msg.value = 'Página creada correctamente.'
     }
     msgType.value = 'success'
-    // No emitir 'saved' automáticamente - el usuario debe cerrar manualmente
+    // Emitir evento para que el padre maneje el cierre
+    emit('saved')
   } catch (e) {
     msg.value = e?.response?.data?.message || 'Error al guardar la página.'
     msgType.value = 'danger'
@@ -79,4 +75,15 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
+
+// Función para exponer onSubmit al padre
+const save = () => {
+  onSubmit()
+}
+
+// Exponer funciones y estado al padre
+defineExpose({
+  save,
+  loading
+})
 </script> 

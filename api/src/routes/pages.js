@@ -5,8 +5,170 @@ const {
   createError, 
   validateAndSanitize 
 } = require('../middleware/errorHandler');
+const path = require('path');
+const fs = require('fs-extra');
+const Mustache = require('mustache');
+const minify = require('html-minifier').minify;
 
 const router = express.Router();
+
+// Función para minificar HTML
+const minifyHTML = (html) => {
+  return minify(html, {
+    collapseWhitespace: true,
+    removeComments: true,
+    minifyCSS: true,
+    minifyJS: true,
+    removeAttributeQuotes: false,
+    removeEmptyAttributes: false,
+    removeOptionalTags: false,
+    removeRedundantAttributes: false,
+    removeScriptTypeAttributes: false,
+    removeStyleLinkTypeAttributes: false,
+    useShortDoctype: false
+  });
+};
+
+// Función para obtener datos para las plantillas
+const getTemplateData = async () => {
+  try {
+    // Obtener páginas publicadas
+    const pages = await db.all(
+      'SELECT * FROM pages WHERE status = "published" ORDER BY created_at DESC'
+    );
+
+    // Obtener tipos de contenido
+    const contentTypes = await db.all('SELECT * FROM content_types');
+
+    // Obtener contenido publicado
+    const content = await db.all(
+      'SELECT * FROM content WHERE status = "published" ORDER BY created_at DESC'
+    );
+
+    // Obtener imágenes
+    const images = await db.all(
+      'SELECT * FROM images WHERE is_thumbnail = FALSE ORDER BY created_at DESC'
+    );
+
+    // Obtener formateadores
+    const formatters = await db.all('SELECT * FROM formatters');
+
+    // Obtener configuraciones mustacheables
+    const { getTemplateSettings } = require('../models/settings');
+    const templateSettings = await getTemplateSettings();
+    const siteConfig = {
+      title: 'Static CMS Site',
+      description: 'Sitio generado con Static CMS',
+      url: process.env.BASE_URL || 'http://localhost:3000',
+      generated_at: new Date().toISOString()
+    };
+
+    // Sobrescribir/añadir settings mustacheables
+    templateSettings.forEach(item => {
+      if (item.slug) {
+        siteConfig[item.slug] = item.value;
+      }
+    });
+
+    // Parsear campos JSON
+    const parsedContentTypes = contentTypes.map(ct => ({
+      ...ct,
+      fields: JSON.parse(ct.fields)
+    }));
+
+    const parsedContent = content.map(c => ({
+      ...c,
+      data: JSON.parse(c.data)
+    }));
+
+    const parsedFormatters = formatters.map(f => ({
+      ...f,
+      config: JSON.parse(f.config)
+    }));
+
+    return {
+      pages,
+      contentTypes: parsedContentTypes,
+      content: parsedContent,
+      images,
+      formatters: parsedFormatters,
+      site: siteConfig
+    };
+  } catch (error) {
+    console.error('Error obteniendo datos para plantillas:', error);
+    throw error;
+  }
+};
+
+// Función para generar archivo estático de una página
+const generatePageFile = async (page) => {
+  try {
+    const publicDir = process.env.PUBLIC_DIR || '../public';
+    const templateDir = process.env.TEMPLATE_DIR || '../template';
+
+    // Solo generar archivos para páginas publicadas
+    if (page.status !== 'published') {
+      console.log(`⏭️  Página ${page.slug} no está publicada, saltando generación`);
+      return;
+    }
+
+    // Obtener datos para plantillas
+    const templateData = await getTemplateData();
+
+    let htmlContent = '';
+
+    if (page.template) {
+      // Usar plantilla específica
+      const templatePath = path.join(templateDir, 'templates', `${page.template}.html`);
+      if (await fs.pathExists(templatePath)) {
+        const template = await fs.readFile(templatePath, 'utf8');
+        htmlContent = Mustache.render(template, {
+          ...templateData,
+          page: page
+        });
+      } else {
+        // Usar contenido directo si no existe plantilla
+        htmlContent = page.content || '';
+      }
+    } else {
+      // Usar contenido directo
+      htmlContent = page.content || '';
+    }
+
+    // Minificar HTML
+    const minifiedHTML = minifyHTML(htmlContent);
+
+    // Crear directorio pages si no existe
+    const pagesDir = path.join(publicDir, 'pages');
+    await fs.ensureDir(pagesDir);
+
+    // Guardar página
+    const pagePath = path.join(pagesDir, `${page.slug}.html`);
+    await fs.writeFile(pagePath, minifiedHTML);
+
+    console.log(`✅ Archivo estático generado: ${page.slug}.html`);
+    return pagePath;
+  } catch (error) {
+    console.error(`❌ Error generando archivo estático para ${page.slug}:`, error);
+    throw error;
+  }
+};
+
+// Función para eliminar archivo estático de una página
+const deletePageFile = async (page) => {
+  try {
+    const publicDir = process.env.PUBLIC_DIR || '../public';
+    const pagePath = path.join(publicDir, 'pages', `${page.slug}.html`);
+
+    if (await fs.pathExists(pagePath)) {
+      await fs.remove(pagePath);
+      console.log(`🗑️  Archivo estático eliminado: ${page.slug}.html`);
+    }
+  } catch (error) {
+    console.error(`❌ Error eliminando archivo estático para ${page.slug}:`, error);
+    // No lanzar error para no interrumpir el flujo principal
+  }
+};
 
 // Esquema de validación para páginas
 const pageSchema = {
@@ -184,6 +346,14 @@ router.post('/', asyncHandler(async (req, res) => {
     [result.id]
   );
 
+  // Generar archivo estático si la página está publicada
+  try {
+    await generatePageFile(newPage);
+  } catch (error) {
+    console.error('Error generando archivo estático:', error);
+    // No fallar la operación principal por errores de generación
+  }
+
   res.status(201).json({
     message: 'Página creada exitosamente',
     page: newPage
@@ -243,6 +413,14 @@ router.put('/:id', asyncHandler(async (req, res) => {
     [id]
   );
 
+  // Generar archivo estático si la página está publicada
+  try {
+    await generatePageFile(updatedPage);
+  } catch (error) {
+    console.error('Error generando archivo estático:', error);
+    // No fallar la operación principal por errores de generación
+  }
+
   res.status(200).json({
     message: 'Página actualizada exitosamente',
     page: updatedPage
@@ -256,7 +434,7 @@ router.delete('/:id', asyncHandler(async (req, res) => {
 
   // Verificar si la página existe
   const existingPage = await db.get(
-    'SELECT id FROM pages WHERE id = ?',
+    'SELECT * FROM pages WHERE id = ?',
     [id]
   );
 
@@ -266,6 +444,14 @@ router.delete('/:id', asyncHandler(async (req, res) => {
 
   // Eliminar página
   await db.run('DELETE FROM pages WHERE id = ?', [id]);
+
+  // Eliminar archivo estático si existe
+  try {
+    await deletePageFile(existingPage);
+  } catch (error) {
+    console.error('Error eliminando archivo estático:', error);
+    // No fallar la operación principal por errores de eliminación
+  }
 
   res.status(200).json({
     message: 'Página eliminada exitosamente'
@@ -298,6 +484,24 @@ router.patch('/:id/status', asyncHandler(async (req, res) => {
     [status, id]
   );
 
+  // Obtener la página actualizada para generar/eliminar archivo estático
+  const updatedPage = await db.get(
+    'SELECT * FROM pages WHERE id = ?',
+    [id]
+  );
+
+  // Generar o eliminar archivo estático según el nuevo estado
+  try {
+    if (status === 'published') {
+      await generatePageFile(updatedPage);
+    } else {
+      await deletePageFile(updatedPage);
+    }
+  } catch (error) {
+    console.error('Error manejando archivo estático:', error);
+    // No fallar la operación principal por errores de archivo
+  }
+
   res.status(200).json({
     message: 'Estado de página actualizado exitosamente',
     status
@@ -329,6 +533,37 @@ router.get('/stats', asyncHandler(async (req, res) => {
   `);
 
   res.status(200).json({ stats });
+}));
+
+// POST /api/pages/:id/regenerate
+// Regenerar manualmente el archivo estático de una página
+router.post('/:id/regenerate', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+ 
+  // Verificar si la página existe
+  const page = await db.get(
+    'SELECT * FROM pages WHERE id = ?',
+    [id]
+  );
+ 
+  if (!page) {
+    throw createError(404, 'Página no encontrada');
+  }
+ 
+  try {
+    // Regenerar archivo estático
+    const filePath = await generatePageFile(page);
+ 
+    res.status(200).json({
+      message: 'Archivo estático regenerado exitosamente',
+      page: page.slug,
+      filePath: filePath,
+      status: page.status
+    });
+  } catch (error) {
+    console.error('Error regenerando archivo estático:', error);
+    throw createError(500, 'Error al regenerar el archivo estático');
+  }
 }));
 
 module.exports = router; 

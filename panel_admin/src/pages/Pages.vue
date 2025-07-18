@@ -16,7 +16,15 @@
 
     <!-- Modal para crear/editar página -->
     <Modal :visible="showFormModal" :title="formModalTitle" size="modal-lg" @close="closeFormModal">
-      <PageForm :page="selectedPage" @saved="onPageSaved" @cancel="closeFormModal" />
+      <PageForm ref="pageFormRef" :page="selectedPage" @saved="onPageSaved" @cancel="closeFormModal" />
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="closeFormModal">
+          {{ selectedPage ? 'Cancelar' : 'Cerrar' }}
+        </button>
+        <button type="button" class="btn btn-primary" @click="savePage" :disabled="pageFormRef?.loading">
+          {{ pageFormRef?.loading ? 'Guardando...' : (selectedPage ? 'Actualizar' : 'Crear') }}
+        </button>
+      </template>
     </Modal>
 
     <!-- Modal para vista previa de página -->
@@ -37,6 +45,7 @@ const showFormModal = ref(false)
 const showPreviewModal = ref(false)
 const selectedPage = ref(null)
 const formModalTitle = ref('Nueva Página')
+const pageFormRef = ref(null)
 
 function openCreatePage() {
   selectedPage.value = null
@@ -52,6 +61,12 @@ function closeFormModal() {
   showFormModal.value = false
   selectedPage.value = null
 }
+function savePage() {
+  if (pageFormRef.value) {
+    pageFormRef.value.save()
+  }
+}
+
 function onPageSaved() {
   closeFormModal()
   // Aquí puedes recargar la lista si es necesario
