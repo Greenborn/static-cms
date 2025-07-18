@@ -45,7 +45,7 @@
         </div>
         <div v-else class="row g-3">
           <div v-for="file in files" :key="file.id" class="col-6 col-sm-4 col-md-3 col-lg-2">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow-sm" @click="openImageModal(file)">
               <div class="card-body d-flex flex-column align-items-center p-2">
                 <img v-if="isImage(file.mimetype)" :src="getPreviewUrl(file)" class="img-fluid rounded mb-2" style="max-height:90px;object-fit:cover;" />
                 <div v-else class="d-flex align-items-center justify-content-center bg-light rounded mb-2" style="height:90px;width:100%">
@@ -94,6 +94,50 @@
       v-if="showNewCategory"
       style="z-index: 1050;"
     ></div>
+
+    <!-- Modal de detalles de imagen -->
+    <div class="modal fade show" tabindex="-1" style="display: block; z-index: 2000;" v-if="showImageModal" @click.self="closeImageModal">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Detalles de la imagen</h5>
+            <button type="button" class="btn-close" @click="closeImageModal"></button>
+          </div>
+          <div class="modal-body">
+            <div v-if="selectedImage">
+              <div class="text-center mb-3">
+                <img :src="getPreviewUrl(selectedImage, false)" class="img-fluid rounded" style="max-height:320px;object-fit:contain;" />
+              </div>
+              <div class="mb-2"><strong>Nombre original:</strong> {{ selectedImage.original_name }}</div>
+              <div class="mb-2"><strong>Tamaño:</strong> {{ formatSize(selectedImage.size) }}</div>
+              <div class="mb-2"><strong>MIME:</strong> {{ selectedImage.mimetype }}</div>
+              <div class="mb-2"><strong>Fecha de subida:</strong> {{ selectedImage.created_at || '-' }}</div>
+              <div class="mb-3"><strong>Categoría:</strong> {{ selectedImage.category_id || '-' }}</div>
+              <div>
+                <strong>Miniaturas generadas:</strong>
+                <ul v-if="thumbnails.length">
+                  <li v-for="thumb in thumbnails" :key="thumb.nombre">
+                    <span class="badge bg-secondary me-2">{{ thumb.nombre }}</span>
+                    <span>{{ thumb.width }}px</span>
+                    <img :src="thumb.url" class="ms-2 rounded border" style="max-height:48px;max-width:80px;object-fit:contain;vertical-align:middle;" />
+                  </li>
+                </ul>
+                <div v-else class="text-muted">No hay miniaturas generadas.
+                  <button class="btn btn-sm btn-primary ms-2" @click="generateThumbnails" :disabled="generatingThumbs">
+                    <span v-if="generatingThumbs"><span class="spinner-border spinner-border-sm"></span> Generando...</span>
+                    <span v-else>Generar miniaturas</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeImageModal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-backdrop fade show" style="z-index: 1990;"></div>
+    </div>
   </div>
 </template>
 
@@ -111,6 +155,13 @@ const newCategoryName = ref('')
 
 // URLs temporales para blobs
 const previewUrls = ref({})
+const breakpoints = ref([])
+
+const loadBreakpoints = async () => {
+  // Obtener breakpoints ordenados (de menor a mayor)
+  const res = await api.getBreakpoints()
+  breakpoints.value = res.breakpoints || []
+}
 
 const loadCategories = async () => {
   const res = await api.getMediaCategories()
@@ -133,16 +184,35 @@ const loadFiles = async () => {
   // Limpiar URLs previas
   Object.values(previewUrls.value).forEach(url => URL.revokeObjectURL(url))
   previewUrls.value = {}
-  // Obtener blobs autenticados para imágenes
+  // Obtener blobs autenticados para miniaturas (o imagen original)
   for (const file of files.value) {
     if (isImage(file.mimetype)) {
-      try {
-        const blob = await api.getMediaPreviewBlob(file.id)
-        const url = URL.createObjectURL(blob)
-        previewUrls.value[file.id] = url
-      } catch (e) {
-        previewUrls.value[file.id] = ''
+      let blob = null
+      let url = ''
+      // Buscar el breakpoint más pequeño
+      let thumbSize = breakpoints.value.length ? breakpoints.value[0].nombre : null
+      if (thumbSize) {
+        try {
+          blob = await api.getMediaPreviewBlob(file.id, thumbSize)
+        } catch (e) {
+          // Si falla, intentar original
+          try {
+            blob = await api.getMediaPreviewBlob(file.id)
+          } catch (e2) {
+            blob = null
+          }
+        }
+      } else {
+        try {
+          blob = await api.getMediaPreviewBlob(file.id)
+        } catch (e) {
+          blob = null
+        }
       }
+      if (blob) {
+        url = URL.createObjectURL(blob)
+      }
+      previewUrls.value[file.id] = url
     }
   }
   loadingFiles.value = false
@@ -180,15 +250,66 @@ const onFileChange = async (e) => {
   loadFiles()
 }
 
+const showImageModal = ref(false)
+const selectedImage = ref(null)
+const thumbnails = ref([])
+const generatingThumbs = ref(false)
+
+const openImageModal = async (file) => {
+  showNewCategory.value = false // Cerrar modal de categoría si está abierto
+  selectedImage.value = file
+  showImageModal.value = true
+  await loadThumbnails(file)
+}
+
+const closeImageModal = () => {
+  showImageModal.value = false
+  selectedImage.value = null
+  thumbnails.value = []
+}
+
+const loadThumbnails = async (file) => {
+  thumbnails.value = []
+  if (!isImage(file.mimetype)) return
+  // Buscar miniaturas para todos los breakpoints
+  for (const bp of breakpoints.value) {
+    try {
+      const blob = await api.getMediaPreviewBlob(file.id, bp.nombre)
+      const url = URL.createObjectURL(blob)
+      thumbnails.value.push({ nombre: bp.nombre, width: bp.valor_px, url })
+    } catch (e) {
+      // No existe la miniatura para este breakpoint
+    }
+  }
+}
+
+const generateThumbnails = async () => {
+  if (!selectedImage.value) return
+  generatingThumbs.value = true
+  try {
+    // Llamar a la API de subida con el mismo archivo para forzar generación de thumbs
+    await api.regenerateThumbnails(selectedImage.value.id)
+    await loadThumbnails(selectedImage.value)
+  } finally {
+    generatingThumbs.value = false
+  }
+}
+
+// Modificar getPreviewUrl para aceptar un segundo parámetro (usar original o miniatura)
+const getPreviewUrl = (file, useThumb = true) => {
+  if (!file) return ''
+  if (!useThumb) return previewUrls.value[file.id] || ''
+  return previewUrls.value[file.id] || ''
+}
+
 onMounted(() => {
+  loadBreakpoints()
   loadCategories()
 })
 
 onBeforeUnmount(() => {
   Object.values(previewUrls.value).forEach(url => URL.revokeObjectURL(url))
 })
-
-const getPreviewUrl = (file) => previewUrls.value[file.id] || ''
 </script>
 
 <style scoped>
