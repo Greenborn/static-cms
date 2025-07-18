@@ -1,54 +1,99 @@
 <template>
-  <div class="flex h-full">
-    <!-- Sidebar de categorías -->
-    <aside class="w-56 bg-gray-50 border-r p-4 flex flex-col">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-bold text-gray-700">Categorías</span>
-        <button @click="showNewCategory = true" class="text-blue-600 text-xl">+</button>
-      </div>
-      <ul class="flex-1 overflow-y-auto">
-        <li v-for="cat in categories" :key="cat.id" :class="[cat.id === selectedCategory?.id ? 'bg-blue-100 font-semibold' : ''] + ' cursor-pointer rounded px-2 py-1 mb-1 hover:bg-blue-50'" @click="selectCategory(cat)">
-          {{ cat.name }}
-          <button v-if="cat.id === selectedCategory?.id" @click.stop="deleteCategory(cat.id)" class="ml-2 text-red-500 text-xs">🗑</button>
-        </li>
-      </ul>
-      <!-- Modal nueva categoría -->
-      <div v-if="showNewCategory" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-        <div class="bg-white p-4 rounded shadow w-80">
-          <h3 class="font-bold mb-2">Nueva categoría</h3>
-          <input v-model="newCategoryName" class="border p-2 w-full mb-2" placeholder="Nombre de la categoría" />
-          <div class="flex justify-end gap-2">
-            <button @click="showNewCategory = false" class="px-3 py-1">Cancelar</button>
-            <button @click="createCategory" class="bg-blue-600 text-white px-3 py-1 rounded">Crear</button>
+  <div class="container-fluid h-100">
+    <div class="row h-100">
+      <!-- Sidebar de categorías -->
+      <aside class="col-md-3 col-lg-2 d-md-block bg-light border-end h-100 p-0">
+        <div class="p-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fw-bold text-secondary">Categorías</span>
+            <button @click="showNewCategory = true" class="btn btn-sm btn-primary" title="Nueva categoría">
+              <i class="bi bi-plus"></i>
+            </button>
           </div>
+          <ul class="list-group">
+            <li v-for="cat in categories" :key="cat.id"
+                :class="['list-group-item', cat.id === selectedCategory?.id ? 'active' : '']"
+                style="cursor:pointer"
+                @click="selectCategory(cat)">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>{{ cat.name }}</span>
+                <button v-if="cat.id === selectedCategory?.id" @click.stop="deleteCategory(cat.id)" class="btn btn-sm btn-link text-danger p-0 ms-2" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </li>
+          </ul>
         </div>
-      </div>
-    </aside>
+      </aside>
 
-    <!-- Main: grid de archivos -->
-    <main class="flex-1 p-6 overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold">Galería multimedia</h2>
-        <label class="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700">
-          Subir archivo
-          <input type="file" class="hidden" multiple @change="onFileChange" />
-        </label>
-      </div>
-      <div v-if="loadingFiles" class="text-center py-8 text-gray-500">Cargando archivos...</div>
-      <div v-else-if="files.length === 0" class="text-center py-8 text-gray-400">No hay archivos en esta categoría.</div>
-      <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        <div v-for="file in files" :key="file.id" class="bg-white rounded shadow p-2 flex flex-col items-center">
-          <img v-if="isImage(file.mimetype)" :src="file.url" class="w-24 h-24 object-cover rounded mb-2" />
-          <div v-else class="w-24 h-24 flex items-center justify-center bg-gray-100 rounded mb-2 text-3xl">📄</div>
-          <div class="text-xs truncate w-full text-center">{{ file.original_name }}</div>
-          <div class="text-xs text-gray-400">{{ formatSize(file.size) }}</div>
-          <div class="flex gap-2 mt-2">
-            <button class="text-red-500 text-lg" title="Eliminar">🗑</button>
-            <button class="text-gray-500 text-lg" title="Mover">⇄</button>
+      <!-- Main: grid de archivos -->
+      <main class="col-md-9 col-lg-10 p-4 overflow-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="h4 fw-bold mb-0">Galería multimedia</h2>
+          <label class="btn btn-primary mb-0">
+            <i class="bi bi-upload me-1"></i> Subir archivo
+            <input type="file" class="d-none" multiple @change="onFileChange" />
+          </label>
+        </div>
+        <div v-if="loadingFiles" class="text-center py-5 text-secondary">
+          <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+          <div>Cargando archivos...</div>
+        </div>
+        <div v-else-if="files.length === 0" class="text-center py-5 text-muted">
+          <i class="bi bi-inbox display-4 mb-3"></i>
+          <div>No hay archivos en esta categoría.</div>
+        </div>
+        <div v-else class="row g-3">
+          <div v-for="file in files" :key="file.id" class="col-6 col-sm-4 col-md-3 col-lg-2">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body d-flex flex-column align-items-center p-2">
+                <img v-if="isImage(file.mimetype)" :src="file.url" class="img-fluid rounded mb-2" style="max-height:90px;object-fit:cover;" />
+                <div v-else class="d-flex align-items-center justify-content-center bg-light rounded mb-2" style="height:90px;width:100%">
+                  <i class="bi bi-file-earmark-text display-6 text-secondary"></i>
+                </div>
+                <div class="text-truncate w-100 small text-center">{{ file.original_name }}</div>
+                <div class="text-muted small">{{ formatSize(file.size) }}</div>
+              </div>
+              <div class="card-footer bg-white border-0 d-flex justify-content-center gap-2 p-2">
+                <button class="btn btn-sm btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>
+                <button class="btn btn-sm btn-outline-secondary" title="Mover"><i class="bi bi-arrows-move"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal nueva categoría -->
+    <div
+      class="modal fade show"
+      tabindex="-1"
+      style="display: block; z-index: 1055;"
+      v-if="showNewCategory"
+      @click.self="showNewCategory = false"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Nueva categoría</h5>
+            <button type="button" class="btn-close" @click="showNewCategory = false"></button>
+          </div>
+          <div class="modal-body">
+            <input v-model="newCategoryName" class="form-control" placeholder="Nombre de la categoría" />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="showNewCategory = false">Cancelar</button>
+            <button type="button" class="btn btn-primary" @click="createCategory">Crear</button>
           </div>
         </div>
       </div>
-    </main>
+    </div>
+    <!-- Backdrop -->
+    <div
+      class="modal-backdrop fade show"
+      v-if="showNewCategory"
+      style="z-index: 1050;"
+    ></div>
   </div>
 </template>
 
@@ -123,5 +168,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Puedes personalizar más con Tailwind */
+/**** El layout ahora depende de Bootstrap, puedes agregar ajustes aquí si es necesario ****/
 </style> 
