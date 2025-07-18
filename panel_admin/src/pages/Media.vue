@@ -65,7 +65,7 @@ const showNewCategory = ref(false)
 const newCategoryName = ref('')
 
 const loadCategories = async () => {
-  const res = await api.api.get('/media/categories')
+  const res = await api.getMediaCategories()
   categories.value = res.categories
   if (categories.value.length && !selectedCategory.value) {
     selectCategory(categories.value[0])
@@ -80,14 +80,14 @@ const selectCategory = (cat) => {
 const loadFiles = async () => {
   if (!selectedCategory.value) return
   loadingFiles.value = true
-  const res = await api.api.get('/media/files?category_id=' + selectedCategory.value.id)
+  const res = await api.getMediaFiles(selectedCategory.value.id)
   files.value = res.files
   loadingFiles.value = false
 }
 
 const createCategory = async () => {
   if (!newCategoryName.value.trim()) return
-  await api.api.post('/media/categories', { name: newCategoryName.value })
+  await api.createMediaCategory(newCategoryName.value)
   showNewCategory.value = false
   newCategoryName.value = ''
   await loadCategories()
@@ -95,7 +95,7 @@ const createCategory = async () => {
 
 const deleteCategory = async (id) => {
   if (!confirm('¿Eliminar esta categoría?')) return
-  await api.api.delete('/media/categories/' + id)
+  await api.deleteMediaCategory(id)
   await loadCategories()
 }
 
@@ -113,10 +113,7 @@ const formatSize = (size) => {
 const onFileChange = async (e) => {
   const filesArr = Array.from(e.target.files)
   if (!filesArr.length || !selectedCategory.value) return
-  const formData = new FormData()
-  formData.append('file', filesArr[0])
-  formData.append('category_id', selectedCategory.value.id)
-  await api.api.post('/media/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+  await api.uploadMediaFile(filesArr[0], selectedCategory.value.id)
   loadFiles()
 }
 

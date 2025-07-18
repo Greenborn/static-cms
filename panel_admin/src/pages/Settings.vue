@@ -91,97 +91,79 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue'
-import ApiService from '../services/api'
+import ApiService from '../services/api.js'
+const api = new ApiService()
 
-export default {
-  name: 'Settings',
-  setup() {
-    const nodeVersion = ref('N/A')
-    const environment = ref('development')
-    const breakpoints = ref([])
-    const bpMsg = ref('')
-    const bpMsgType = ref('success')
-    const siteTitle = ref('')
-    const siteLang = ref('')
-    const settingsMsg = ref('')
-    const settingsMsgType = ref('success')
-    const api = new ApiService()
+const nodeVersion = ref('N/A')
+const environment = ref('development')
+const breakpoints = ref([])
+const bpMsg = ref('')
+const bpMsgType = ref('success')
 
-    // Cargar título y lenguaje del sitio
-    const loadSettings = async () => {
-      try {
-        const res = await api.api.get('/settings')
-        siteTitle.value = res.data.siteTitle || ''
-        siteLang.value = res.data.lang || 'es'
-      } catch (e) {
-        settingsMsg.value = 'Error cargando configuración'
-        settingsMsgType.value = 'danger'
-      }
-    }
+const siteTitle = ref('')
+const siteLang = ref('')
+const settingsMsg = ref('')
+const settingsMsgType = ref('success')
 
-    const saveSettings = async () => {
-      settingsMsg.value = ''
-      try {
-        await api.api.put('/settings/site-title', { siteTitle: siteTitle.value })
-        await api.api.put('/settings/lang', { lang: siteLang.value })
-        settingsMsg.value = 'Configuración guardada correctamente'
-        settingsMsgType.value = 'success'
-      } catch (e) {
-        settingsMsg.value = 'Error al guardar la configuración'
-        settingsMsgType.value = 'danger'
-      }
-    }
-
-    const loadBreakpoints = async () => {
-      try {
-        const res = await api.getBreakpoints()
-        breakpoints.value = res.breakpoints
-      } catch (e) {
-        bpMsg.value = 'Error cargando breakpoints'
-        bpMsgType.value = 'danger'
-      }
-    }
-
-    const saveBreakpoints = async () => {
-      bpMsg.value = ''
-      let success = true
-      for (const bp of breakpoints.value) {
-        try {
-          await api.updateBreakpoint(bp.nombre, bp.valor_px)
-        } catch (e) {
-          success = false
-        }
-      }
-      if (success) {
-        bpMsg.value = 'Breakpoints guardados correctamente'
-        bpMsgType.value = 'success'
-      } else {
-        bpMsg.value = 'Error al guardar uno o más breakpoints'
-        bpMsgType.value = 'danger'
-      }
-      loadBreakpoints()
-    }
-
-    onMounted(() => {
-      loadSettings()
-      loadBreakpoints()
-    })
-
-    return {
-      nodeVersion,
-      environment,
-      breakpoints,
-      bpMsg,
-      bpMsgType,
-      siteTitle,
-      siteLang,
-      settingsMsg,
-      settingsMsgType,
-      saveBreakpoints,
-      saveSettings
-    }
+const loadSettings = async () => {
+  try {
+    const res = await api.getSettings()
+    siteTitle.value = res.siteTitle || ''
+    siteLang.value = res.lang || 'es'
+  } catch (e) {
+    settingsMsg.value = 'Error cargando configuración'
+    settingsMsgType.value = 'danger'
   }
 }
+
+const saveSettings = async () => {
+  settingsMsg.value = ''
+  try {
+    await api.updateSiteTitle(siteTitle.value)
+    await api.updateLang(siteLang.value)
+    settingsMsg.value = 'Configuración guardada correctamente'
+    settingsMsgType.value = 'success'
+  } catch (e) {
+    settingsMsg.value = 'Error al guardar la configuración'
+    settingsMsgType.value = 'danger'
+  }
+}
+
+const loadBreakpoints = async () => {
+  try {
+    const res = await api.getBreakpoints()
+    breakpoints.value = res.breakpoints
+  } catch (e) {
+    bpMsg.value = 'Error cargando breakpoints'
+    bpMsgType.value = 'danger'
+  }
+}
+
+const saveBreakpoints = async () => {
+  bpMsg.value = ''
+  let success = true
+  for (const bp of breakpoints.value) {
+    try {
+      await api.updateBreakpoint(bp.nombre, bp.valor_px)
+    } catch (e) {
+      success = false
+    }
+  }
+  if (success) {
+    bpMsg.value = 'Breakpoints guardados correctamente'
+    bpMsgType.value = 'success'
+  } else {
+    bpMsg.value = 'Error al guardar uno o más breakpoints'
+    bpMsgType.value = 'danger'
+  }
+  loadBreakpoints()
+}
+
+onMounted(() => {
+  loadSettings()
+  loadBreakpoints()
+})
+
 </script> 

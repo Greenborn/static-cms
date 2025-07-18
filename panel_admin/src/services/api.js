@@ -181,6 +181,31 @@ class ApiService {
     return response.data
   }
 
+  // Multimedia (categorías y archivos)
+  async getMediaCategories() {
+    const response = await this.api.get('/media/categories')
+    return response.data
+  }
+  async getMediaFiles(categoryId) {
+    const response = await this.api.get('/media/files?category_id=' + categoryId)
+    return response.data
+  }
+  async createMediaCategory(name) {
+    const response = await this.api.post('/media/categories', { name })
+    return response.data
+  }
+  async deleteMediaCategory(id) {
+    const response = await this.api.delete('/media/categories/' + id)
+    return response.data
+  }
+  async uploadMediaFile(file, categoryId) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('category_id', categoryId)
+    const response = await this.api.post('/media/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+    return response.data
+  }
+
   // Formateadores
   async getFormatters() {
     const response = await this.api.get('/formatters')
@@ -296,6 +321,20 @@ class ApiService {
   async updateBreakpoint(nombre, valor_px) {
     const response = await this.api.put(`/breakpoints/${nombre}`, { valor_px });
     return response.data;
+  }
+
+  // Configuración
+  async getSettings() {
+    const response = await this.api.get('/settings')
+    return response.data
+  }
+  async updateSiteTitle(siteTitle) {
+    const response = await this.api.put('/settings/site-title', { siteTitle })
+    return response.data
+  }
+  async updateLang(lang) {
+    const response = await this.api.put('/settings/lang', { lang })
+    return response.data
   }
 }
 
