@@ -26,7 +26,6 @@
         contenteditable="true"
         :style="{minHeight: '250px', outline: 'none'}"
         @input="onWysiwygInput"
-        v-html="html"
       ></div>
     </div>
     <div v-show="tab==='html'">
@@ -45,13 +44,16 @@ const html = ref(props.modelValue)
 const wysiwygRef = ref(null)
 
 watch(() => props.modelValue, (val) => {
-  if (val !== html.value) html.value = val
+  if (val !== html.value) {
+    html.value = val
+    // Solo actualizar el contenido del editor si no está enfocado
+    if (tab.value === 'wysiwyg' && wysiwygRef.value && document.activeElement !== wysiwygRef.value) {
+      wysiwygRef.value.innerHTML = val
+    }
+  }
 })
 watch(html, (val) => {
   emit('update:modelValue', val)
-  if (tab.value === 'wysiwyg' && wysiwygRef.value && wysiwygRef.value.innerHTML !== val) {
-    wysiwygRef.value.innerHTML = val
-  }
 })
 
 const exec = (cmd, arg) => {
@@ -62,7 +64,8 @@ const onWysiwygInput = () => {
   html.value = wysiwygRef.value.innerHTML
 }
 const onHtmlInput = () => {
-  if (tab.value === 'wysiwyg' && wysiwygRef.value) {
+  // Solo actualizar el editor WYSIWYG si no está enfocado
+  if (tab.value === 'wysiwyg' && wysiwygRef.value && document.activeElement !== wysiwygRef.value) {
     nextTick(() => { wysiwygRef.value.innerHTML = html.value })
   }
 }
