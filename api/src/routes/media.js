@@ -282,12 +282,71 @@ router.post('/upload', authMiddleware, upload.single('file'), asyncHandler(async
     url: fileUrl,
     category_id: category_id || null
   });
-  // Procesar breakpoints (miniaturas) como antes...
-  // ... (puedes mantener la lógica existente para sharp y resized)
+
+  // === Generar miniaturas para cada breakpoint ===
+  let resized = [];
+  if (req.file.mimetype && req.file.mimetype.startsWith('image/')) {
+    const breakpoints = await getBreakpointsOrdered();
+    const ext = path.extname(req.file.filename);
+    const name = path.basename(req.file.filename, ext);
+    const inputPath = path.join(__dirname, '../../../public/i', req.file.filename);
+    for (const bp of breakpoints) {
+      const width = parseInt(bp.valor_px);
+      if (!width || isNaN(width)) continue;
+      const thumbName = `${name}_${bp.nombre}${ext}`;
+      const thumbPath = path.join(__dirname, '../../../public/i', thumbName);
+      try {
+        await sharp(inputPath)
+          .resize({ width, withoutEnlargement: true })
+          .toFile(thumbPath);
+        resized.push({ nombre: bp.nombre, url: `/i/${thumbName}`, width });
+      } catch (err) {
+        console.error(`Error generando miniatura ${thumbName}:`, err);
+      }
+    }
+  }
+
   res.status(200).json({
     message: 'Archivo subido exitosamente',
-    file: fileInfo
+    file: fileInfo,
+    resized
   });
+}));
+
+/**
+ * @route POST /api/media/regenerate-thumbnails/:id
+ * @desc Regenera las miniaturas de una imagen existente
+ * @access Privado (requiere autenticación)
+ */
+router.post('/regenerate-thumbnails/:id', authMiddleware, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const file = await MediaFiles.getById(id);
+  if (!file) {
+    return res.status(404).json({ message: 'Archivo no encontrado' });
+  }
+  if (!file.mimetype || !file.mimetype.startsWith('image/')) {
+    return res.status(400).json({ message: 'El archivo no es una imagen' });
+  }
+  const breakpoints = await getBreakpointsOrdered();
+  const ext = path.extname(file.filename);
+  const name = path.basename(file.filename, ext);
+  const inputPath = path.join(__dirname, '../../../public/i', file.filename);
+  let resized = [];
+  for (const bp of breakpoints) {
+    const width = parseInt(bp.valor_px);
+    if (!width || isNaN(width)) continue;
+    const thumbName = `${name}_${bp.nombre}${ext}`;
+    const thumbPath = path.join(__dirname, '../../../public/i', thumbName);
+    try {
+      await sharp(inputPath)
+        .resize({ width, withoutEnlargement: true })
+        .toFile(thumbPath);
+      resized.push({ nombre: bp.nombre, url: `/i/${thumbName}`, width });
+    } catch (err) {
+      console.error(`Error generando miniatura ${thumbName}:`, err);
+    }
+  }
+  res.status(200).json({ message: 'Miniaturas regeneradas', resized });
 }));
 
 /**
@@ -314,6 +373,37 @@ router.delete('/files/:id', authMiddleware, asyncHandler(async (req, res) => {
   const { id } = req.params;
   await MediaFiles.remove(id);
   res.status(200).json({ message: 'Archivo eliminado' });
+}));
+
+/**
+ * @route GET /api/media/preview/:id
+ * @desc Sirve la imagen original (o miniatura si se especifica) para vista previa en el panel admin
+ * @access Privado (requiere autenticación)
+ * @query ?size=breakpoint (opcional)
+ */
+router.get('/preview/:id', authMiddleware, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { size } = req.query;
+  const file = await MediaFiles.getById(id);
+  if (!file) {
+    return res.status(404).json({ message: 'Archivo no encontrado' });
+  }
+  let filePath = path.join(__dirname, '../../../public/i', file.filename);
+  // Si se solicita una miniatura por breakpoint
+  if (size) {
+    const ext = path.extname(file.filename);
+    const name = path.basename(file.filename, ext);
+    const thumbName = `${name}_${size}${ext}`;
+    const thumbPath = path.join(__dirname, '../../../public/i', thumbName);
+    if (fs.existsSync(thumbPath)) {
+      filePath = thumbPath;
+    }
+  }
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ message: 'Archivo no encontrado en disco' });
+  }
+  res.setHeader('Content-Type', file.mimetype || 'application/octet-stream');
+  res.sendFile(filePath);
 }));
 
 module.exports = router; 
