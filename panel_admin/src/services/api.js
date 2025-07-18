@@ -56,14 +56,18 @@ class ApiService {
   }
 
   // Páginas
-  async getPages(page = 1, limit = 10, status) {
-    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() })
+  async getPages(page = 1, limit = 10, search = '', status = '', sortBy = 'created_at', sortOrder = 'DESC') {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      sortBy,
+      sortOrder
+    })
+    if (search) params.append('search', search)
     if (status) params.append('status', status)
-    
     const response = await this.api.get(`/pages?${params}`)
     return response.data
   }
-
   async getPage(id) {
     const response = await this.api.get(`/pages/${id}`)
     return response.data
@@ -337,8 +341,16 @@ class ApiService {
     return response.data
   }
 
-  async getMediaPreviewBlob(id) {
-    const response = await this.api.get(`/media/preview/${id}`, { responseType: 'blob' })
+  async getMediaPreviewBlob(id, size) {
+    let url = `/media/preview/${id}`
+    if (size) url += `?size=${encodeURIComponent(size)}`
+    const response = await this.api.get(url, { responseType: 'blob' })
+    return response.data
+  }
+
+  async regenerateThumbnails(id) {
+    // Endpoint a implementar en el backend: POST /media/regenerate-thumbnails/:id
+    const response = await this.api.post(`/media/regenerate-thumbnails/${id}`)
     return response.data
   }
 }
