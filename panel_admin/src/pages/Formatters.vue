@@ -29,8 +29,6 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Formatters'
-}
+<script setup>
+// Aquí puedes agregar lógica reactiva en el futuro
 </script> 

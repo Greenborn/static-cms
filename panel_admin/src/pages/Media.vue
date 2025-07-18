@@ -52,75 +52,77 @@
   </div>
 </template>
 
-<script>
-import api from '../services/api';
+<script setup>
+import { ref, onMounted } from 'vue'
+import ApiService from '../services/api.js'
+const api = new ApiService()
 
-export default {
-  name: 'Media',
-  data() {
-    return {
-      categories: [],
-      selectedCategory: null,
-      files: [],
-      loadingFiles: false,
-      showNewCategory: false,
-      newCategoryName: '',
-    };
-  },
-  created() {
-    this.loadCategories();
-  },
-  methods: {
-    async loadCategories() {
-      const res = await api.get('/media/categories');
-      this.categories = res.categories;
-      if (this.categories.length && !this.selectedCategory) {
-        this.selectCategory(this.categories[0]);
-      }
-    },
-    async selectCategory(cat) {
-      this.selectedCategory = cat;
-      this.loadFiles();
-    },
-    async loadFiles() {
-      if (!this.selectedCategory) return;
-      this.loadingFiles = true;
-      const res = await api.get('/media/files?category_id=' + this.selectedCategory.id);
-      this.files = res.files;
-      this.loadingFiles = false;
-    },
-    async createCategory() {
-      if (!this.newCategoryName.trim()) return;
-      await api.post('/media/categories', { name: this.newCategoryName });
-      this.showNewCategory = false;
-      this.newCategoryName = '';
-      await this.loadCategories();
-    },
-    async deleteCategory(id) {
-      if (!confirm('¿Eliminar esta categoría?')) return;
-      await api.delete('/media/categories/' + id);
-      await this.loadCategories();
-    },
-    isImage(mime) {
-      return mime && mime.startsWith('image/');
-    },
-    formatSize(size) {
-      if (!size) return '';
-      if (size < 1024) return size + ' B';
-      if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB';
-      return (size / (1024 * 1024)).toFixed(1) + ' MB';
-    },
-    async onFileChange(e) {
-      const files = Array.from(e.target.files);
-      if (!files.length || !this.selectedCategory) return;
-      const formData = new FormData();
-      formData.append('file', files[0]); // Por ahora solo uno, luego soportar múltiples
-      formData.append('category_id', this.selectedCategory.id);
-      await api.post('/media/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      this.loadFiles();
-    },
+const categories = ref([])
+const selectedCategory = ref(null)
+const files = ref([])
+const loadingFiles = ref(false)
+const showNewCategory = ref(false)
+const newCategoryName = ref('')
+
+const loadCategories = async () => {
+  const res = await api.api.get('/media/categories')
+  categories.value = res.categories
+  if (categories.value.length && !selectedCategory.value) {
+    selectCategory(categories.value[0])
   }
-};
+}
+
+const selectCategory = (cat) => {
+  selectedCategory.value = cat
+  loadFiles()
+}
+
+const loadFiles = async () => {
+  if (!selectedCategory.value) return
+  loadingFiles.value = true
+  const res = await api.api.get('/media/files?category_id=' + selectedCategory.value.id)
+  files.value = res.files
+  loadingFiles.value = false
+}
+
+const createCategory = async () => {
+  if (!newCategoryName.value.trim()) return
+  await api.api.post('/media/categories', { name: newCategoryName.value })
+  showNewCategory.value = false
+  newCategoryName.value = ''
+  await loadCategories()
+}
+
+const deleteCategory = async (id) => {
+  if (!confirm('¿Eliminar esta categoría?')) return
+  await api.api.delete('/media/categories/' + id)
+  await loadCategories()
+}
+
+const isImage = (mime) => {
+  return mime && mime.startsWith('image/')
+}
+
+const formatSize = (size) => {
+  if (!size) return ''
+  if (size < 1024) return size + ' B'
+  if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB'
+  return (size / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+const onFileChange = async (e) => {
+  const filesArr = Array.from(e.target.files)
+  if (!filesArr.length || !selectedCategory.value) return
+  const formData = new FormData()
+  formData.append('file', filesArr[0])
+  formData.append('category_id', selectedCategory.value.id)
+  await api.api.post('/media/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+  loadFiles()
+}
+
+onMounted(() => {
+  loadCategories()
+})
 </script>
 
 <style scoped>

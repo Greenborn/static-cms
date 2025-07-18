@@ -97,34 +97,23 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { computed } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
 import { useRouter } from 'vue-router'
 
-export default {
-  name: 'Layout',
-  setup() {
-    const authStore = useAuthStore()
-    const router = useRouter()
-    
-    const user = computed(() => authStore.user.value)
+const authStore = useAuthStore()
+const router = useRouter()
 
-    const logout = async () => {
-      await authStore.logout()
-      router.push({ name: 'Login' })
-    }
+const user = computed(() => authStore.user.value)
 
-    const toggleSidebar = () => {
-      // Implementar toggle para móviles si es necesario
-      console.log('Toggle sidebar')
-    }
+const logout = async () => {
+  await authStore.logout()
+  router.push({ name: 'Login' })
+}
 
-    return {
-      user,
-      logout,
-      toggleSidebar
-    }
-  }
+const toggleSidebar = () => {
+  // Implementar toggle para móviles si es necesario
+  console.log('Toggle sidebar')
 }
 </script> 

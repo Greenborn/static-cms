@@ -282,3 +282,7 @@ Este es un sistema de gestión de contenido estático (Static CMS) desarrollado 
 ---
 
 **Nota**: Estas reglas deben seguirse para mantener la consistencia y calidad del código en todo el proyecto Static CMS. 
+
+# Reglas de desarrollo para Static CMS
+
+- Todos los componentes Vue en panel_admin deben implementarse usando Composition API con <script setup> (no Options API ni defineComponent). 
