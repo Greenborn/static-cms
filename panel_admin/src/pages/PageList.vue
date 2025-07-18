@@ -56,6 +56,7 @@
             </li>
           </ul>
         </nav>
+        <div v-if="msg" :class="['alert', msgType === 'success' ? 'alert-success' : 'alert-danger']">{{ msg }}</div>
       </div>
     </div>
   </div>
@@ -73,6 +74,8 @@ const limit = ref(10)
 const sortBy = ref('created_at')
 sortBy.value = 'created_at'
 const sortOrder = ref('DESC')
+const msg = ref('')
+const msgType = ref('success')
 
 const loadPages = async () => {
   const res = await api.getPages(pagination.value.page, limit.value, search.value, status.value, sortBy.value, sortOrder.value)
@@ -126,5 +129,20 @@ const statusText = (status) => {
     default: return status
   }
 }
+
+const deletePage = async (page) => {
+  if (!confirm(`¿Eliminar la página "${page.title}"?`)) return
+  msg.value = ''
+  try {
+    await api.deletePage(page.id)
+    msg.value = 'Página eliminada correctamente.'
+    msgType.value = 'success'
+    loadPages()
+  } catch (e) {
+    msg.value = e?.response?.data?.message || 'Error al eliminar la página.'
+    msgType.value = 'danger'
+  }
+}
+
 onMounted(loadPages)
 </script> 
