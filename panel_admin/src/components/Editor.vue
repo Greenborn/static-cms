@@ -2,10 +2,10 @@
   <div class="editor-component">
     <ul class="nav nav-tabs mb-2">
       <li class="nav-item">
-        <button class="nav-link" :class="{active: tab==='wysiwyg'}" @click="tab='wysiwyg'">WYSIWYG</button>
+        <button class="nav-link" :class="{active: tab==='wysiwyg'}" @click.stop="tab='wysiwyg'">WYSIWYG</button>
       </li>
       <li class="nav-item">
-        <button class="nav-link" :class="{active: tab==='html'}" @click="tab='html'">Código HTML</button>
+        <button class="nav-link" :class="{active: tab==='html'}" @click.stop="tab='html'">Código HTML</button>
       </li>
     </ul>
     <div v-show="tab==='wysiwyg'">

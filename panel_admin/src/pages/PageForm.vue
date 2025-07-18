@@ -23,7 +23,8 @@
     <div v-if="msg" :class="['alert', msgType === 'success' ? 'alert-success' : 'alert-danger']">{{ msg }}</div>
     <div class="d-flex justify-content-end gap-2">
       <button type="button" class="btn btn-secondary" @click="$emit('cancel')">Cancelar</button>
-      <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? 'Guardando...' : 'Guardar' }}</button>
+      <button v-if="msgType === 'success'" type="button" class="btn btn-success" @click="$emit('saved')">Cerrar</button>
+      <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? 'Guardando...' : (msgType === 'success' ? 'Guardado' : 'Guardar') }}</button>
     </div>
   </form>
 </template>
@@ -70,7 +71,7 @@ const onSubmit = async () => {
       msg.value = 'Página creada correctamente.'
     }
     msgType.value = 'success'
-    setTimeout(() => emit('saved'), 600)
+    // No emitir 'saved' automáticamente - el usuario debe cerrar manualmente
   } catch (e) {
     msg.value = e?.response?.data?.message || 'Error al guardar la página.'
     msgType.value = 'danger'

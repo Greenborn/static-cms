@@ -1,6 +1,6 @@
 <template>
   <div v-if="visible">
-    <div class="modal fade show" tabindex="-1" :style="modalStyle" @click.self="onClose">
+    <div class="modal fade show" tabindex="-1" :style="modalStyle">
       <div :class="['modal-dialog', sizeClass]">
         <div class="modal-content">
           <div class="modal-header">
@@ -10,7 +10,9 @@
             </slot>
           </div>
           <div class="modal-body">
-            <slot />
+            <div class="modal-slot-wrapper">
+              <slot />
+            </div>
           </div>
           <div class="modal-footer">
             <slot name="footer">
@@ -41,4 +43,10 @@ const sizeClass = computed(() => size.value)
 function onClose() {
   emit('close')
 }
-</script> 
+</script>
+<style scoped>
+.modal-slot-wrapper {
+  width: 100%;
+  height: 100%;
+}
+</style> 
