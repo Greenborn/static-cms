@@ -336,6 +336,11 @@ class ApiService {
     const response = await this.api.put('/settings/lang', { lang })
     return response.data
   }
+
+  async getMediaPreviewBlob(id) {
+    const response = await this.api.get(`/media/preview/${id}`, { responseType: 'blob' })
+    return response.data
+  }
 }
 
 export default ApiService; 

@@ -47,7 +47,7 @@
           <div v-for="file in files" :key="file.id" class="col-6 col-sm-4 col-md-3 col-lg-2">
             <div class="card h-100 shadow-sm">
               <div class="card-body d-flex flex-column align-items-center p-2">
-                <img v-if="isImage(file.mimetype)" :src="file.url" class="img-fluid rounded mb-2" style="max-height:90px;object-fit:cover;" />
+                <img v-if="isImage(file.mimetype)" :src="getPreviewUrl(file)" class="img-fluid rounded mb-2" style="max-height:90px;object-fit:cover;" />
                 <div v-else class="d-flex align-items-center justify-content-center bg-light rounded mb-2" style="height:90px;width:100%">
                   <i class="bi bi-file-earmark-text display-6 text-secondary"></i>
                 </div>
@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import ApiService from '../services/api.js'
 const api = new ApiService()
 
@@ -108,6 +108,9 @@ const files = ref([])
 const loadingFiles = ref(false)
 const showNewCategory = ref(false)
 const newCategoryName = ref('')
+
+// URLs temporales para blobs
+const previewUrls = ref({})
 
 const loadCategories = async () => {
   const res = await api.getMediaCategories()
@@ -127,6 +130,21 @@ const loadFiles = async () => {
   loadingFiles.value = true
   const res = await api.getMediaFiles(selectedCategory.value.id)
   files.value = res.files
+  // Limpiar URLs previas
+  Object.values(previewUrls.value).forEach(url => URL.revokeObjectURL(url))
+  previewUrls.value = {}
+  // Obtener blobs autenticados para imágenes
+  for (const file of files.value) {
+    if (isImage(file.mimetype)) {
+      try {
+        const blob = await api.getMediaPreviewBlob(file.id)
+        const url = URL.createObjectURL(blob)
+        previewUrls.value[file.id] = url
+      } catch (e) {
+        previewUrls.value[file.id] = ''
+      }
+    }
+  }
   loadingFiles.value = false
 }
 
@@ -165,6 +183,12 @@ const onFileChange = async (e) => {
 onMounted(() => {
   loadCategories()
 })
+
+onBeforeUnmount(() => {
+  Object.values(previewUrls.value).forEach(url => URL.revokeObjectURL(url))
+})
+
+const getPreviewUrl = (file) => previewUrls.value[file.id] || ''
 </script>
 
 <style scoped>
