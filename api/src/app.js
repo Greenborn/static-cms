@@ -122,10 +122,41 @@ app.use(helmet({
 }));
 
 // Configuración de CORS
+const corsOrigins = [];
+
+// Agregar orígenes según el entorno
+if (process.env.NODE_ENV === 'production') {
+  // En producción, usar las variables de entorno configuradas
+  if (process.env.BASE_URL) {
+    corsOrigins.push(process.env.BASE_URL);
+  }
+  if (process.env.DOMINIO_ADMIN) {
+    corsOrigins.push(process.env.DOMINIO_ADMIN);
+  }
+  // Fallback para producción si no hay variables configuradas
+  if (corsOrigins.length === 0) {
+    corsOrigins.push('https://your-domain.com');
+  }
+} else {
+  // En desarrollo, incluir localhost y las variables de entorno
+  corsOrigins.push('http://localhost:3000', 'http://localhost:3003', 'http://localhost:8080');
+  
+  // Agregar BASE_URL y DOMINIO_ADMIN si están configurados
+  if (process.env.BASE_URL) {
+    corsOrigins.push(process.env.BASE_URL);
+  }
+  if (process.env.DOMINIO_ADMIN) {
+    corsOrigins.push(process.env.DOMINIO_ADMIN);
+  }
+}
+
+// Eliminar duplicados
+const uniqueOrigins = [...new Set(corsOrigins)];
+
+console.log('🌐 Configuración CORS - Orígenes permitidos:', uniqueOrigins);
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://your-domain.com']
-    : ['http://localhost:8080', 'http://localhost:3000'],
+  origin: uniqueOrigins,
   credentials: true
 }));
 
@@ -194,6 +225,11 @@ if (SERVIR_CONTENIDO) {
   app.use(express.static(publicPath));
   console.log('🗂️  Servir contenido público activado:', publicPath);
 }
+
+// Servir directorio de imágenes /i/ directamente
+const imagesPath = path.resolve(__dirname, '../../public/i');
+app.use('/i', express.static(imagesPath));
+console.log('🖼️  Servir directorio de imágenes activado:', imagesPath);
 
 // Health check
 app.get('/health', (req, res) => {
