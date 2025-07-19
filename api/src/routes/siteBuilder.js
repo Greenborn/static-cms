@@ -15,17 +15,18 @@ const router = express.Router();
 // Función para minificar HTML
 const minifyHTML = (html) => {
   return minify(html, {
-    collapseWhitespace: true,
+    collapseWhitespace: false,
     removeComments: true,
-    minifyCSS: true,
-    minifyJS: true,
+    minifyCSS: false,
+    minifyJS: false,
     removeAttributeQuotes: false,
     removeEmptyAttributes: false,
     removeOptionalTags: false,
     removeRedundantAttributes: false,
     removeScriptTypeAttributes: false,
     removeStyleLinkTypeAttributes: false,
-    useShortDoctype: false
+    useShortDoctype: false,
+    preserveLineBreaks: true
   });
 };
 

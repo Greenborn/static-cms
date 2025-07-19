@@ -132,8 +132,12 @@ const validateFieldTypes = (data, fieldTypes) => {
 };
 
 // Función para sanitizar entrada
-const sanitizeInput = (input) => {
+const sanitizeInput = (input, fieldName = null) => {
   if (typeof input === 'string') {
+    // No sanitizar campos que contienen HTML
+    if (fieldName === 'content' || fieldName === 'data') {
+      return input.trim();
+    }
     return input.trim().replace(/[<>]/g, '');
   }
   return input;
@@ -155,7 +159,7 @@ const validateAndSanitize = (data, schema) => {
       }
       
       // Sanitizar
-      sanitized[field] = sanitizeInput(data[field]);
+      sanitized[field] = sanitizeInput(data[field], field);
       
       // Validar longitud si se especifica
       if (config.maxLength && sanitized[field].length > config.maxLength) {

@@ -256,10 +256,24 @@ router.get('/:id', asyncHandler(async (req, res) => {
   res.status(200).json({ content });
 }));
 
+// Función para decodificar datos URL encoded
+const decodeContentData = (data) => {
+  if (data.data && typeof data.data === 'string') {
+    try {
+      data.data = decodeURIComponent(data.data);
+    } catch (error) {
+      console.warn('Error decodificando datos URL encoded:', error.message);
+    }
+  }
+  return data;
+};
+
 // POST /api/content
 // Crear nuevo contenido
 router.post('/', asyncHandler(async (req, res) => {
-  const contentData = validateAndSanitize(req.body, contentSchema);
+  // Decodificar datos antes de validar
+  const decodedData = decodeContentData(req.body);
+  const contentData = validateAndSanitize(decodedData, contentSchema);
 
   // Validar datos según el tipo de contenido
   await validateContentData(contentData.content_type_id, contentData.data);
@@ -315,7 +329,9 @@ router.post('/', asyncHandler(async (req, res) => {
 // Actualizar contenido existente
 router.put('/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const contentData = validateAndSanitize(req.body, contentSchema);
+  // Decodificar datos antes de validar
+  const decodedData = decodeContentData(req.body);
+  const contentData = validateAndSanitize(decodedData, contentSchema);
 
   // Verificar si el contenido existe
   const existingContent = await db.get(

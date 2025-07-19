@@ -123,7 +123,17 @@ const exec = (cmd, arg) => {
   onWysiwygInput()
 }
 const onWysiwygInput = () => {
-  html.value = wysiwygRef.value.innerHTML
+  if (wysiwygRef.value) {
+    // Usar una función más robusta para obtener el HTML
+    const content = wysiwygRef.value.innerHTML
+    // Solo limpiar elementos realmente problemáticos, no todo el HTML
+    const cleanContent = content
+      .replace(/<div><br><\/div>/g, '') // Eliminar divs vacíos
+      .replace(/<div><\/div>/g, '') // Eliminar divs vacíos
+      .trim()
+    
+    html.value = cleanContent
+  }
 }
 const onHtmlInput = () => {
   // Solo actualizar el editor WYSIWYG si no está enfocado
@@ -263,38 +273,41 @@ const generateResponsiveImageTag = (image) => {
   
   // Generar srcset y sizes
   const srcset = variants
-    .filter(v => v.width !== 'original')
+    .filter(v => v.width !== 'original' && v.width > 0)
     .map(v => `${v.url} ${v.width}w`)
     .join(', ')
   
   // Generar sizes más preciso
   let sizes = '100vw'
   if (breakpoints.value.length > 0) {
-    const sortedBreakpoints = [...breakpoints.value].sort((a, b) => a.valor_px - b.valor_px)
-    const sizeRules = sortedBreakpoints.map((bp, index) => {
-      if (index === 0) {
-        return `(max-width: ${bp.valor_px}px) ${bp.valor_px}px`
-      } else {
-        const prevBp = sortedBreakpoints[index - 1]
-        return `(min-width: ${prevBp.valor_px + 1}px) and (max-width: ${bp.valor_px}px) ${bp.valor_px}px`
-      }
-    })
+    const validBreakpoints = breakpoints.value.filter(bp => bp.valor_px > 0).sort((a, b) => a.valor_px - b.valor_px)
     
-    // Agregar regla para pantallas más grandes que el breakpoint máximo
-    const maxBreakpoint = sortedBreakpoints[sortedBreakpoints.length - 1]
-    sizeRules.push(`(min-width: ${maxBreakpoint.valor_px + 1}px) ${maxBreakpoint.valor_px}px`)
-    
-    sizes = sizeRules.join(', ')
+    if (validBreakpoints.length > 0) {
+      const sizeRules = validBreakpoints.map((bp, index) => {
+        if (index === 0) {
+          return `(max-width: ${bp.valor_px}px) ${bp.valor_px}px`
+        } else {
+          const prevBp = validBreakpoints[index - 1]
+          return `(min-width: ${prevBp.valor_px + 1}px) and (max-width: ${bp.valor_px}px) ${bp.valor_px}px`
+        }
+      })
+      
+      // Agregar regla para pantallas más grandes que el breakpoint máximo
+      const maxBreakpoint = validBreakpoints[validBreakpoints.length - 1]
+      sizeRules.push(`(min-width: ${maxBreakpoint.valor_px + 1}px) ${maxBreakpoint.valor_px}px`)
+      
+      sizes = sizeRules.join(', ')
+    }
   }
   
   // Crear el tag de imagen responsiva (usando URLs del sitio público)
   const originalUrl = variants.find(v => v.width === 'original')?.url || ''
-  const imgTag = `<img src="${originalUrl}" 
-    srcset="${srcset}" 
-    sizes="${sizes}" 
-    alt="${image.original_name}" 
-    style="max-width: 100%; height: auto;" 
-    loading="lazy" />`
+  // Escapar solo las comillas en el alt (no los < > porque no son necesarios en alt)
+  const escapedAlt = image.original_name
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+  
+  const imgTag = `<img src="${originalUrl}" srcset="${srcset}" sizes="${sizes}" alt="${escapedAlt}" style="max-width: 100%; height: auto;" loading="lazy" />`
   
   return imgTag
 }
@@ -305,8 +318,27 @@ const selectImage = (image) => {
     const imgTag = generateResponsiveImageTag(image)
     
     if (tab.value === 'wysiwyg' && wysiwygRef.value) {
-      // Insertar en el cursor actual
-      document.execCommand('insertHTML', false, imgTag)
+      // Insertar en el cursor actual usando una función más segura
+      const selection = window.getSelection()
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0)
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = imgTag
+        const fragment = document.createDocumentFragment()
+        
+        while (tempDiv.firstChild) {
+          fragment.appendChild(tempDiv.firstChild)
+        }
+        
+        range.deleteContents()
+        range.insertNode(fragment)
+        range.collapse(false)
+        selection.removeAllRanges()
+        selection.addRange(range)
+      } else {
+        // Fallback si no hay selección
+        document.execCommand('insertHTML', false, imgTag)
+      }
       onWysiwygInput()
     } else {
       // Insertar en el HTML
@@ -330,10 +362,33 @@ const selectImage = (image) => {
     // Fallback: insertar imagen simple si falla la generación responsiva
     const imageUrl = getPublicImageUrl(image)
     if (imageUrl) {
-      const fallbackImgTag = `<img src="${imageUrl}" alt="${image.original_name}" style="max-width: 100%; height: auto;" />`
+      // Escapar solo las comillas en el alt
+      const escapedAlt = image.original_name
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+      
+      const fallbackImgTag = `<img src="${imageUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto;" />`
       
       if (tab.value === 'wysiwyg' && wysiwygRef.value) {
-        document.execCommand('insertHTML', false, fallbackImgTag)
+        const selection = window.getSelection()
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0)
+          const tempDiv = document.createElement('div')
+          tempDiv.innerHTML = fallbackImgTag
+          const fragment = document.createDocumentFragment()
+          
+          while (tempDiv.firstChild) {
+            fragment.appendChild(tempDiv.firstChild)
+          }
+          
+          range.deleteContents()
+          range.insertNode(fragment)
+          range.collapse(false)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        } else {
+          document.execCommand('insertHTML', false, fallbackImgTag)
+        }
         onWysiwygInput()
       } else {
         const textarea = document.querySelector('.editor-component textarea')

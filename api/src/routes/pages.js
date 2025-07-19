@@ -15,17 +15,18 @@ const router = express.Router();
 // Función para minificar HTML
 const minifyHTML = (html) => {
   return minify(html, {
-    collapseWhitespace: true,
+    collapseWhitespace: false,
     removeComments: true,
-    minifyCSS: true,
-    minifyJS: true,
+    minifyCSS: false,
+    minifyJS: false,
     removeAttributeQuotes: false,
     removeEmptyAttributes: false,
     removeOptionalTags: false,
     removeRedundantAttributes: false,
     removeScriptTypeAttributes: false,
     removeStyleLinkTypeAttributes: false,
-    useShortDoctype: false
+    useShortDoctype: false,
+    preserveLineBreaks: true
   });
 };
 
@@ -310,10 +311,24 @@ router.get('/slug/:slug', asyncHandler(async (req, res) => {
   res.status(200).json({ page });
 }));
 
+// Función para decodificar contenido URL encoded
+const decodeContent = (data) => {
+  if (data.content && typeof data.content === 'string') {
+    try {
+      data.content = decodeURIComponent(data.content);
+    } catch (error) {
+      console.warn('Error decodificando contenido URL encoded:', error.message);
+    }
+  }
+  return data;
+};
+
 // POST /api/pages
 // Crear una nueva página
 router.post('/', asyncHandler(async (req, res) => {
-  const pageData = validateAndSanitize(req.body, pageSchema);
+  // Decodificar contenido antes de validar
+  const decodedData = decodeContent(req.body);
+  const pageData = validateAndSanitize(decodedData, pageSchema);
 
   // Verificar si el slug ya existe
   const existingPage = await db.get(
@@ -364,7 +379,9 @@ router.post('/', asyncHandler(async (req, res) => {
 // Actualizar una página existente
 router.put('/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const pageData = validateAndSanitize(req.body, pageSchema);
+  // Decodificar contenido antes de validar
+  const decodedData = decodeContent(req.body);
+  const pageData = validateAndSanitize(decodedData, pageSchema);
 
   // Verificar si la página existe
   const existingPage = await db.get(

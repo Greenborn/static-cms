@@ -74,12 +74,22 @@ class ApiService {
   }
 
   async createPage(data) {
-    const response = await this.api.post('/pages', data)
+    // Codificar el contenido HTML como URL encoded
+    const encodedData = {
+      ...data,
+      content: data.content ? encodeURIComponent(data.content) : data.content
+    }
+    const response = await this.api.post('/pages', encodedData)
     return response.data
   }
 
   async updatePage(id, data) {
-    const response = await this.api.put(`/pages/${id}`, data)
+    // Codificar el contenido HTML como URL encoded
+    const encodedData = {
+      ...data,
+      content: data.content ? encodeURIComponent(data.content) : data.content
+    }
+    const response = await this.api.put(`/pages/${id}`, encodedData)
     return response.data
   }
 
@@ -302,12 +312,22 @@ class ApiService {
   }
 
   async createContent(data) {
-    const response = await this.api.post('/content', data)
+    // Codificar el contenido HTML como URL encoded
+    const encodedData = {
+      ...data,
+      data: data.data ? encodeURIComponent(data.data) : data.data
+    }
+    const response = await this.api.post('/content', encodedData)
     return response.data
   }
 
   async updateContent(id, data) {
-    const response = await this.api.put(`/content/${id}`, data)
+    // Codificar el contenido HTML como URL encoded
+    const encodedData = {
+      ...data,
+      data: data.data ? encodeURIComponent(data.data) : data.data
+    }
+    const response = await this.api.put(`/content/${id}`, encodedData)
     return response.data
   }
 

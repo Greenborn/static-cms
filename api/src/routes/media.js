@@ -273,10 +273,13 @@ router.post('/upload', authMiddleware, upload.single('file'), asyncHandler(async
   }
   // Guardar imagen original (ya guardada por multer)
   const fileUrl = `/i/${req.file.filename}`;
+  // Limpiar el nombre original del archivo para evitar problemas de encoding
+  const cleanOriginalName = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
+  
   // Guardar metadata en la base de datos
   const fileInfo = await MediaFiles.create({
     filename: req.file.filename,
-    original_name: req.file.originalname,
+    original_name: cleanOriginalName,
     mimetype: req.file.mimetype,
     size: req.file.size,
     url: fileUrl,
