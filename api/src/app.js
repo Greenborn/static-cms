@@ -109,6 +109,12 @@ const runCommand = (command, args, cwd) => {
 };
 
 // Configuración de seguridad
+const cspImgSrc = ["'self'", "data:", "https:"];
+if (process.env.CSP_IMG_SRC) {
+  const additionalImgSrc = process.env.CSP_IMG_SRC.split(',').map(src => src.trim());
+  cspImgSrc.push(...additionalImgSrc);
+}
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -116,9 +122,10 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: cspImgSrc,
     },
   },
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // Configuración de CORS
@@ -148,6 +155,12 @@ if (process.env.NODE_ENV === 'production') {
   if (process.env.DOMINIO_ADMIN) {
     corsOrigins.push(process.env.DOMINIO_ADMIN);
   }
+}
+
+// Agregar orígenes CORS adicionales si están configurados
+if (process.env.CORS_ADDITIONAL_ORIGINS) {
+  const additionalOrigins = process.env.CORS_ADDITIONAL_ORIGINS.split(',').map(origin => origin.trim());
+  corsOrigins.push(...additionalOrigins);
 }
 
 // Eliminar duplicados
