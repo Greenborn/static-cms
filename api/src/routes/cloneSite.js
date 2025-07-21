@@ -104,6 +104,23 @@ router.post('/', requireAdmin, async (req, res) => {
     // Crear directorio de clonado si no existe
     const cloneDir = path.join(process.cwd(), 'template', 'clone')
     await fs.ensureDir(cloneDir)
+
+    // Crear subdirectorio config y copiar archivos de configuración si no existen
+    const baseConfigDir = path.join(process.cwd(), 'template', 'base', 'config')
+    const cloneConfigDir = path.join(cloneDir, 'config')
+    await fs.ensureDir(cloneConfigDir)
+    // Copiar site.json
+    const baseSiteJson = path.join(baseConfigDir, 'site.json')
+    const cloneSiteJson = path.join(cloneConfigDir, 'site.json')
+    if (!(await fs.pathExists(cloneSiteJson))) {
+      await fs.copy(baseSiteJson, cloneSiteJson)
+    }
+    // Copiar theme.json
+    const baseThemeJson = path.join(baseConfigDir, 'theme.json')
+    const cloneThemeJson = path.join(cloneConfigDir, 'theme.json')
+    if (!(await fs.pathExists(cloneThemeJson))) {
+      await fs.copy(baseThemeJson, cloneThemeJson)
+    }
     
     // Crear registro de proceso
     const processResult = await db.run(

@@ -252,8 +252,8 @@ class ApiService {
     return response.data
   }
 
-  async startBuild() {
-    const response = await this.api.post('/site-builder/build')
+  async startBuild(data = {}) {
+    const response = await this.api.post('/site-builder/build', data)
     return response.data
   }
 
@@ -371,6 +371,12 @@ class ApiService {
   async regenerateThumbnails(id) {
     // Endpoint a implementar en el backend: POST /media/regenerate-thumbnails/:id
     const response = await this.api.post(`/media/regenerate-thumbnails/${id}`)
+    return response.data
+  }
+
+  // Obtener templates disponibles
+  async getSiteTemplates() {
+    const response = await this.api.get('/site-builder/templates')
     return response.data
   }
 }

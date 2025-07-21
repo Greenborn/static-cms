@@ -184,6 +184,12 @@
             <h5 class="card-title mb-0">Estado de Construcción</h5>
           </div>
           <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label">Template a utilizar</label>
+              <select v-model="templateSeleccionado" class="form-select">
+                <option v-for="tpl in templates" :key="tpl" :value="tpl">{{ tpl }}</option>
+              </select>
+            </div>
             <p class="text-muted">Funcionalidad del constructor de sitio en desarrollo...</p>
             <p>Aquí se implementará:</p>
             <ul>
@@ -226,7 +232,7 @@
 </template>
 
 <script>
-import { ref, reactive, nextTick, watch } from 'vue'
+import { ref, reactive, nextTick, watch, onMounted } from 'vue'
 import ApiService from '../services/api.js'
 const api = new ApiService()
 
@@ -238,11 +244,26 @@ export default {
     const siteUrl = ref('')
     const cloneProcess = ref(null)
     const resources = ref([])
+    const templates = ref([])
+    const templateSeleccionado = ref('base')
+
+    // Obtener templates disponibles al montar
+    onMounted(async () => {
+      try {
+        const res = await api.getSiteTemplates()
+        templates.value = res.templates || []
+        if (templates.value.length > 0) {
+          templateSeleccionado.value = templates.value.includes('base') ? 'base' : templates.value[0]
+        }
+      } catch (e) {
+        templates.value = ['base']
+      }
+    })
 
     const startBuild = async () => {
       try {
         isBuilding.value = true
-        await api.startBuild()
+        await api.startBuild({ template: templateSeleccionado.value })
       } catch (error) {
         console.error('Error starting build:', error)
       } finally {
@@ -442,6 +463,8 @@ export default {
       siteUrl,
       cloneProcess,
       resources,
+      templates,
+      templateSeleccionado,
       startBuild,
               startCloneAnalysis,
         processResource,
