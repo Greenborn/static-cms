@@ -206,7 +206,12 @@ router.post('/', requireAdmin, async (req, res) => {
         const fontFilename = generateSafeFilename(fontRes.url, 'font')
         const fontPath = path.join(fontsDir, fontFilename)
         await fs.writeFile(fontPath, response.data)
-        console.log(`✅ Fuente descargada: ${fontFilename}`)
+        // Copiar la fuente al directorio público
+        const publicFontsDir = path.join(process.cwd(), 'public', 'f')
+        await fs.ensureDir(publicFontsDir)
+        const publicFontPath = path.join(publicFontsDir, fontFilename)
+        await fs.copyFile(fontPath, publicFontPath)
+        console.log(`✅ Fuente descargada y copiada a public/f: ${fontFilename}`)
       } catch (e) {
         console.error(`❌ Error descargando fuente ${fontRes.url}:`, e.message)
       }
