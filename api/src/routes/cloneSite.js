@@ -139,13 +139,18 @@ router.post('/', requireAdmin, async (req, res) => {
     
     const html = response.data
     const resources = extractResources(html, siteUrl)
-    
+
+    // Eliminar referencias a CSS externos ya extraídos
+    const $ = cheerio.load(html)
+    $('link[rel="stylesheet"]').remove()
+    const cleanedHtml = $.html()
+
     // Generar nombre para el archivo HTML
     const htmlFilename = generateSafeFilename(siteUrl, 'html')
     const htmlPath = path.join(cloneDir, htmlFilename)
-    
-    // Guardar HTML
-    await fs.writeFile(htmlPath, html, 'utf8')
+
+    // Guardar HTML limpio
+    await fs.writeFile(htmlPath, cleanedHtml, 'utf8')
     
     // Actualizar proceso
     await db.run(
