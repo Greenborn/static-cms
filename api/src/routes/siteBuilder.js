@@ -232,12 +232,12 @@ const generateSite = async (templateDir) => {
     }
 
     // Generar página principal (index.html)
-    let indexTemplatePath = path.join(templateDir, 'base', 'index.html');
+    let indexTemplatePath = path.join(templateDir, 'index.html');
     if (!(await fs.pathExists(indexTemplatePath))) {
       throw new Error('No se encontró index.html en el template seleccionado');
     }
     // CSS y JS desde el template seleccionado
-    const styleCssPath = path.join(templateDir, 'base', 'style.css');
+    const styleCssPath = path.join(templateDir, 'style.css');
     let minifiedCss = '';
     if (await fs.pathExists(styleCssPath)) {
       const cssContent = await fs.readFile(styleCssPath, 'utf8');
@@ -246,7 +246,7 @@ const generateSite = async (templateDir) => {
       await fs.ensureDir(cssOutDir);
       await fs.writeFile(path.join(cssOutDir, 'style.min.css'), minifiedCss);
     }
-    const scriptsJsPath = path.join(templateDir, 'base', 'scripts.js');
+    const scriptsJsPath = path.join(templateDir, 'scripts.js');
     let minifiedJs = '';
     if (await fs.pathExists(scriptsJsPath)) {
       const jsContent = await fs.readFile(scriptsJsPath, 'utf8');
@@ -358,7 +358,7 @@ Disallow: /api/
  */
 router.post('/build', asyncHandler(async (req, res) => {
   const templateName = req.body.template || 'base';
-  const templateDir = path.resolve(__dirname, '../../template', templateName);
+  const templateDir = path.join(process.cwd(), 'template', templateName);
   if (!await fs.pathExists(templateDir)) {
     throw createError(400, 'Template no encontrado');
   }
@@ -374,7 +374,8 @@ router.post('/build', asyncHandler(async (req, res) => {
 router.post('/generate-page/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
   const publicDir = process.env.PUBLIC_DIR || '../public';
-  const templateDir = process.env.TEMPLATE_DIR || '../template';
+  // Usar la ruta correcta para templates
+  const templateDir = path.join(process.cwd(), 'template');
 
   // Obtener la página
   const page = await db.get(
@@ -473,8 +474,8 @@ router.post('/clean', asyncHandler(async (req, res) => {
 // GET /api/site-builder/templates
 // Obtener plantillas disponibles
 router.get('/templates', asyncHandler(async (req, res) => {
-  const templateDir = path.resolve(__dirname, '../../template');
-  const dirs = await fs.readdir(templateDir, { withFileTypes: true });
+  const templateRoot = path.join(process.cwd(), 'template');
+  const dirs = await fs.readdir(templateRoot, { withFileTypes: true });
   const templates = dirs
     .filter(dirent => dirent.isDirectory() && dirent.name !== 'config')
     .map(dirent => dirent.name);
@@ -485,7 +486,8 @@ router.get('/templates', asyncHandler(async (req, res) => {
 // Previsualizar una plantilla con datos
 router.post('/preview', asyncHandler(async (req, res) => {
   const { template, data = {} } = req.body;
-  const templateDir = process.env.TEMPLATE_DIR || '../template';
+  // Usar la ruta correcta para templates
+  const templateDir = path.join(process.cwd(), 'template');
   
   if (!template) {
     throw createError(400, 'Nombre de plantilla requerido');
