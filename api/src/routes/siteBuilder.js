@@ -134,34 +134,51 @@ const copyStaticFiles = async (sourceDir, targetDir) => {
   }
 };
 
-// Función para generar el sitio completo
-const generateSite = async () => {
+// Función para leer configuración JSON desde el template seleccionado
+const readTemplateConfig = async (templateDir) => {
+  const configDir = path.join(templateDir, 'config');
+  const config = {};
+  // Leer site.json
+  const siteJsonPath = path.join(configDir, 'site.json');
+  if (await fs.pathExists(siteJsonPath)) {
+    config.site = await fs.readJson(siteJsonPath);
+  }
+  // Leer theme.json
+  const themeJsonPath = path.join(configDir, 'theme.json');
+  if (await fs.pathExists(themeJsonPath)) {
+    config.theme = await fs.readJson(themeJsonPath);
+  }
+  return config;
+};
+
+// Modificar generateSite para incluir la configuración leída
+const generateSite = async (templateDir) => {
   const publicDir = process.env.PUBLIC_DIR || '../public';
-  const templateDir = process.env.TEMPLATE_DIR || '../template';
-  
   try {
     console.log('🚀 Iniciando generación del sitio...');
-
-    // Limpiar directorio público
     await fs.emptyDir(publicDir);
     console.log('✅ Directorio público limpiado');
-
-    // Obtener datos para plantillas
+    // Leer configuración del template
+    const templateConfig = await readTemplateConfig(templateDir);
+    // Obtener datos para plantillas (puedes adaptar getTemplateData para leer config desde templateDir/config/ si es necesario)
     const templateData = await getTemplateData();
+    // Inyectar la configuración leída en templateData.site
+    if (templateConfig.site) {
+      templateData.site = { ...templateData.site, ...templateConfig.site };
+    }
+    if (templateConfig.theme) {
+      templateData.theme = templateConfig.theme;
+    }
     console.log('✅ Datos obtenidos para plantillas');
-
-    // Crear estructura de directorios
     await fs.ensureDir(path.join(publicDir, 'assets/css'));
     await fs.ensureDir(path.join(publicDir, 'assets/js'));
     await fs.ensureDir(path.join(publicDir, 'assets/images'));
     await fs.ensureDir(path.join(publicDir, 'pages'));
     console.log('✅ Estructura de directorios creada');
-
     // Copiar archivos estáticos
     await copyStaticFiles(path.join(templateDir, 'assets'), path.join(publicDir, 'assets'));
     await copyStaticFiles(path.join(templateDir, 'static'), publicDir);
-
-    // Copiar y minificar todos los .html de template/base al directorio público
+    // Copiar y minificar todos los .html de <templateDir>/base al directorio público
     const baseHtmlDir = path.join(templateDir, 'base');
     const publicHtmlDir = publicDir;
     if (await fs.pathExists(baseHtmlDir)) {
@@ -178,8 +195,7 @@ const generateSite = async () => {
         }
       }
     }
-
-    // Generar páginas
+    // Generar páginas (igual que antes)
     for (const page of templateData.pages) {
       try {
         let htmlContent = '';
@@ -216,56 +232,44 @@ const generateSite = async () => {
     }
 
     // Generar página principal (index.html)
-    let indexTemplatePath = path.join(templateDir, 'templates', 'index.html');
-    // Si no existe en templates, usar template/base/index.html
+    let indexTemplatePath = path.join(templateDir, 'base', 'index.html');
     if (!(await fs.pathExists(indexTemplatePath))) {
-      indexTemplatePath = path.join(templateDir, 'base', 'index.html');
+      throw new Error('No se encontró index.html en el template seleccionado');
     }
-    // --- INICIO INCLUSIÓN CSS ---
-    // Leer y minificar style.css
+    // CSS y JS desde el template seleccionado
     const styleCssPath = path.join(templateDir, 'base', 'style.css');
     let minifiedCss = '';
     if (await fs.pathExists(styleCssPath)) {
       const cssContent = await fs.readFile(styleCssPath, 'utf8');
       minifiedCss = minifyCSS(cssContent);
-      // Guardar CSS minificado en public/assets/css/style.min.css
       const cssOutDir = path.join(publicDir, 'assets', 'css');
       await fs.ensureDir(cssOutDir);
       await fs.writeFile(path.join(cssOutDir, 'style.min.css'), minifiedCss);
     }
-    // --- FIN INCLUSIÓN CSS ---
-    // --- INICIO INCLUSIÓN JS ---
-    // Leer y minificar scripts.js
     const scriptsJsPath = path.join(templateDir, 'base', 'scripts.js');
     let minifiedJs = '';
     if (await fs.pathExists(scriptsJsPath)) {
       const jsContent = await fs.readFile(scriptsJsPath, 'utf8');
       minifiedJs = await minifyJS(jsContent);
-      // Guardar JS minificado en public/assets/js/scripts.min.js
       const jsOutDir = path.join(publicDir, 'assets', 'js');
       await fs.ensureDir(jsOutDir);
       await fs.writeFile(path.join(jsOutDir, 'scripts.min.js'), minifiedJs);
     }
-    // --- FIN INCLUSIÓN JS ---
     if (await fs.pathExists(indexTemplatePath)) {
       let indexTemplate = await fs.readFile(indexTemplatePath, 'utf8');
-      // Insertar el link al CSS minificado antes de </head> si existe
       if (minifiedCss) {
         const cssLink = '<link rel="stylesheet" href="/assets/css/style.min.css">';
         if (indexTemplate.includes('</head>')) {
           indexTemplate = indexTemplate.replace('</head>', `${cssLink}\n</head>`);
         } else {
-          // Si no hay head, lo insertamos al inicio
           indexTemplate = cssLink + '\n' + indexTemplate;
         }
       }
-      // Insertar el script JS minificado antes de </body> si existe
       if (minifiedJs) {
         const jsScript = '<script src="/assets/js/scripts.min.js"></script>';
         if (indexTemplate.includes('</body>')) {
           indexTemplate = indexTemplate.replace('</body>', `${jsScript}\n</body>`);
         } else {
-          // Si no hay body, lo insertamos al final
           indexTemplate = indexTemplate + '\n' + jsScript;
         }
       }
@@ -274,7 +278,6 @@ const generateSite = async () => {
       await fs.writeFile(path.join(publicDir, 'index.html'), minifiedIndex);
       console.log('✅ Página principal generada');
     }
-
     // Generar sitemap
     const sitemap = generateSitemap(templateData.pages);
     await fs.writeFile(path.join(publicDir, 'sitemap.xml'), sitemap);
@@ -291,7 +294,6 @@ const generateSite = async () => {
       pages_generated: templateData.pages.length,
       generated_at: new Date().toISOString()
     };
-
   } catch (error) {
     console.error('❌ Error generando sitio:', error);
     throw error;
@@ -355,9 +357,14 @@ Disallow: /api/
  * @returns { message, success, pages_generated, generated_at }
  */
 router.post('/build', asyncHandler(async (req, res) => {
-  const result = await generateSite();
+  const templateName = req.body.template || 'base';
+  const templateDir = path.resolve(__dirname, '../../template', templateName);
+  if (!await fs.pathExists(templateDir)) {
+    throw createError(400, 'Template no encontrado');
+  }
+  const result = await generateSite(templateDir);
   res.status(200).json({
-    message: 'Sitio generado exitosamente',
+    message: `Sitio generado exitosamente usando el template: ${templateName}`,
     ...result
   });
 }));
@@ -466,30 +473,12 @@ router.post('/clean', asyncHandler(async (req, res) => {
 // GET /api/site-builder/templates
 // Obtener plantillas disponibles
 router.get('/templates', asyncHandler(async (req, res) => {
-  const templateDir = process.env.TEMPLATE_DIR || '../template';
-  const templatesPath = path.join(templateDir, 'templates');
-  
-  try {
-    if (await fs.pathExists(templatesPath)) {
-      const files = await fs.readdir(templatesPath);
-      const templates = files
-        .filter(file => file.endsWith('.html'))
-        .map(file => file.replace('.html', ''));
-      
-      res.status(200).json({
-        templates,
-        template_dir: templatesPath
-      });
-    } else {
-      res.status(200).json({
-        templates: [],
-        template_dir: templatesPath,
-        message: 'Directorio de plantillas no existe'
-      });
-    }
-  } catch (error) {
-    throw createError(500, 'Error al obtener plantillas');
-  }
+  const templateDir = path.resolve(__dirname, '../../template');
+  const dirs = await fs.readdir(templateDir, { withFileTypes: true });
+  const templates = dirs
+    .filter(dirent => dirent.isDirectory() && dirent.name !== 'config')
+    .map(dirent => dirent.name);
+  res.json({ templates });
 }));
 
 // POST /api/site-builder/preview
