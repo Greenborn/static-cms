@@ -88,6 +88,38 @@ function getDefaultExtension(type) {
   }
 }
 
+// Función recursiva para extraer URLs de fuentes y CSS importados de un CSS
+async function extractFontAndCssImportsFromCss(cssUrl, baseUrl, visited = new Set()) {
+  const fontUrls = []
+  if (visited.has(cssUrl)) return fontUrls // Evitar ciclos
+  visited.add(cssUrl)
+  try {
+    const response = await axios.get(cssUrl, { timeout: 10000 })
+    const css = response.data
+    // Buscar fuentes
+    const urlRegex = /url\((['"]?)([^)'"\s]+\.(woff2?|ttf|otf|eot))\1\)/gi
+    let match
+    while ((match = urlRegex.exec(css)) !== null) {
+      const fontUrl = match[2]
+      const absoluteUrl = url.resolve(baseUrl, fontUrl)
+      fontUrls.push({ url: absoluteUrl, type: 'font', original: fontUrl })
+    }
+    // Buscar @import url(...)
+    const importRegex = /@import\s+url\((['"]?)([^)'"\s]+\.css)\1\)/gi
+    let importMatch
+    while ((importMatch = importRegex.exec(css)) !== null) {
+      const importUrl = importMatch[2]
+      const absoluteImportUrl = url.resolve(baseUrl, importUrl)
+      // Recursivo: buscar fuentes en el CSS importado
+      const importedFonts = await extractFontAndCssImportsFromCss(absoluteImportUrl, baseUrl, visited)
+      fontUrls.push(...importedFonts)
+    }
+  } catch (e) {
+    console.error('Error extrayendo fuentes/imports de CSS:', cssUrl, e.message)
+  }
+  return fontUrls
+}
+
 /**
  * @route POST /api/clone-site
  * @desc Inicia proceso de clonado - analiza sitio y devuelve lista de recursos
@@ -138,10 +170,49 @@ router.post('/', requireAdmin, async (req, res) => {
     })
     
     const html = response.data
-    const resources = extractResources(html, siteUrl)
+    let resources = extractResources(html, siteUrl)
+
+    // Buscar fuentes en los CSS descargados (recursivo)
+    let fontResources = []
+    for (const resource of resources) {
+      if (resource.type === 'css') {
+        const fonts = await extractFontAndCssImportsFromCss(resource.url, siteUrl)
+        fontResources = fontResources.concat(fonts)
+      }
+    }
+
+    // Buscar fuentes en los bloques <style> embebidos en el HTML
+    const $ = cheerio.load(html) // Re-load HTML for cheerio to work on it
+    $('style').each((i, elem) => {
+      const css = $(elem).html()
+      if (css) {
+        const urlRegex = /url\((['"]?)([^)'"\s]+\.(woff2?|ttf|otf|eot))\1\)/gi
+        let match
+        while ((match = urlRegex.exec(css)) !== null) {
+          const fontUrl = match[2]
+          const absoluteUrl = url.resolve(siteUrl, fontUrl)
+          fontResources.push({ url: absoluteUrl, type: 'font', original: fontUrl })
+        }
+      }
+    })
+    resources = resources.concat(fontResources)
+
+    // Descargar automáticamente todas las fuentes detectadas
+    const fontsDir = path.join(cloneDir, 'assets', 'fonts')
+    await fs.ensureDir(fontsDir)
+    for (const fontRes of fontResources) {
+      try {
+        const response = await axios.get(fontRes.url, { timeout: 10000, responseType: 'arraybuffer' })
+        const fontFilename = generateSafeFilename(fontRes.url, 'font')
+        const fontPath = path.join(fontsDir, fontFilename)
+        await fs.writeFile(fontPath, response.data)
+        console.log(`✅ Fuente descargada: ${fontFilename}`)
+      } catch (e) {
+        console.error(`❌ Error descargando fuente ${fontRes.url}:`, e.message)
+      }
+    }
 
     // Eliminar referencias a CSS externos ya extraídos
-    const $ = cheerio.load(html)
     $('link[rel="stylesheet"]').remove()
     const cleanedHtml = $.html()
 
@@ -222,7 +293,12 @@ router.post('/process-resource', requireAdmin, async (req, res) => {
     await fs.ensureDir(assetsDir)
     
     // Crear subdirectorio por tipo
-    const typeDir = path.join(assetsDir, resourceType)
+    let typeDir
+    if (resourceType === 'font') {
+      typeDir = path.join(assetsDir, 'fonts')
+    } else {
+      typeDir = path.join(assetsDir, resourceType)
+    }
     await fs.ensureDir(typeDir)
     
     // Descargar recurso
