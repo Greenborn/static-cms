@@ -102,7 +102,7 @@ router.post('/', requireAdmin, async (req, res) => {
 
   try {
     // Crear directorio de clonado si no existe
-    const cloneDir = path.resolve(__dirname, '../../../template/clone')
+    const cloneDir = path.join(process.cwd(), 'template', 'clone')
     await fs.ensureDir(cloneDir)
     
     // Crear registro de proceso
@@ -195,7 +195,7 @@ router.post('/process-resource', requireAdmin, async (req, res) => {
   }
 
   try {
-    const cloneDir = path.resolve(__dirname, '../../../template/clone')
+    const cloneDir = path.join(process.cwd(), 'template', 'clone')
     const assetsDir = path.join(cloneDir, 'assets')
     await fs.ensureDir(assetsDir)
     

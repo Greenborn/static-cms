@@ -1,0 +1,12 @@
+{
+  "watch": ["api/src"],
+  "ignore": [
+    "logs/*",
+    "uploads/*",
+    "database/*",
+    "public/*",
+    "template/clone/*"
+  ],
+  "ext": "js,json",
+  "exec": "node api/src/app.js"
+} 
