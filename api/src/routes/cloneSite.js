@@ -217,8 +217,34 @@ router.post('/', requireAdmin, async (req, res) => {
       }
     }
 
-    // Eliminar referencias a CSS externos ya extraídos
-    $('link[rel="stylesheet"]').remove()
+    // === EXTRAER Y GUARDAR CSS PRELOAD ===
+    const cssPreloadDir = path.join(cloneDir, 'assets', 'css')
+    await fs.ensureDir(cssPreloadDir)
+    let preloadCssContent = ''
+    // Extraer CSS de bloques <style>
+    $('style').each((i, elem) => {
+      const css = $(elem).html()
+      if (css && css.trim().length > 0) {
+        preloadCssContent += `\n/* style block ${i} */\n` + css + '\n'
+      }
+    })
+    // Extraer href de <link rel="preload"> y <link rel="modulepreload">
+    $('link[rel="preload"], link[rel="modulepreload"]').each((i, elem) => {
+      const href = $(elem).attr('href')
+      if (href && href.endsWith('.css')) {
+        preloadCssContent += `\n/* preload link ${i}: ${href} */\n@import url('${href}');\n`
+      }
+    })
+    // Si hay contenido, guardar en archivo
+    if (preloadCssContent.trim().length > 0) {
+      const preloadCssPath = path.join(cssPreloadDir, 'preload_preload_.css')
+      await fs.writeFile(preloadCssPath, preloadCssContent, 'utf8')
+      console.log('✅ CSS preload extraído y guardado en', preloadCssPath)
+    }
+
+    // Eliminar bloques <style> y <link rel="preload"> o <link rel="modulepreload"> relacionados a CSS/módulos
+    $('style').remove()
+    $('link[rel="preload"], link[rel="modulepreload"]').remove()
     const cleanedHtml = $.html()
 
     // Generar nombre para el archivo HTML
