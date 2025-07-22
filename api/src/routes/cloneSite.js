@@ -321,6 +321,59 @@ router.post('/process-resource', requireAdmin, async (req, res) => {
     
     // Guardar archivo
     await fs.writeFile(filePath, response.data)
+
+    // === Si es imagen, registrar en galería, generar miniaturas y asociar a 'No catalogadas' ===
+    if (resourceType === 'image') {
+      const crypto = require('crypto')
+      const MediaCategories = require('../models/mediaCategories')
+      const MediaFiles = require('../models/mediaFiles')
+      const { getBreakpointsOrdered } = require('../models/breakpoints')
+      const sharp = require('sharp')
+      // Calcular hash SHA256 de la imagen
+      const hash = crypto.createHash('sha256').update(response.data).digest('hex')
+      // Verificar si ya existe una imagen con ese hash
+      const existing = await MediaFiles.getByHash(hash)
+      if (existing) {
+        console.log(`⚠️  Imagen duplicada detectada (hash: ${hash}), no se guarda ni procesa.`)
+      } else {
+        // 1. Verificar/crear categoría 'No catalogadas'
+        let category = (await MediaCategories.getAll()).find(c => c.name === 'No catalogadas')
+        if (!category) {
+          category = await MediaCategories.create('No catalogadas')
+        }
+        // 2. Guardar en media_files
+        const fileUrl = `/i/${filename}`
+        const fileInfo = await MediaFiles.create({
+          filename,
+          original_name: filename,
+          mimetype: response.headers['content-type'] || '',
+          size: response.data.length,
+          url: fileUrl,
+          category_id: category.id,
+          hash
+        })
+        // 3. Generar miniaturas
+        const breakpoints = await getBreakpointsOrdered()
+        const ext = path.extname(filename)
+        const name = path.basename(filename, ext)
+        const inputPath = path.join(process.cwd(), 'public', 'i', filename)
+        // Copiar imagen al directorio público si no está
+        const publicImgDir = path.join(process.cwd(), 'public', 'i')
+        await fs.ensureDir(publicImgDir)
+        await fs.copyFile(filePath, inputPath)
+        for (const bp of breakpoints) {
+          const width = parseInt(bp.valor_px)
+          if (!width || isNaN(width)) continue
+          const thumbName = `${name}_${bp.nombre}${ext}`
+          const thumbPath = path.join(publicImgDir, thumbName)
+          try {
+            await sharp(inputPath).resize({ width }).toFile(thumbPath)
+          } catch (e) {
+            console.error(`Error generando miniatura ${thumbName}:`, e.message)
+          }
+        }
+      }
+    }
     
     // Actualizar contador de recursos procesados
     await db.run(

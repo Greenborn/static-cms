@@ -22,13 +22,18 @@ const MediaFiles = {
   },
 
   // Crear nuevo archivo multimedia
-  async create({ filename, original_name, mimetype, size, url, category_id }) {
+  async create({ filename, original_name, mimetype, size, url, category_id, hash }) {
     const now = new Date().toISOString();
     const result = await db.run(
-      'INSERT INTO media_files (filename, original_name, mimetype, size, url, category_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [filename, original_name, mimetype, size, url, category_id, now, now]
+      'INSERT INTO media_files (filename, original_name, mimetype, size, url, category_id, created_at, updated_at, hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [filename, original_name, mimetype, size, url, category_id, now, now, hash]
     );
-    return { id: result.lastID, filename, original_name, mimetype, size, url, category_id, created_at: now, updated_at: now };
+    return { id: result.lastID, filename, original_name, mimetype, size, url, category_id, created_at: now, updated_at: now, hash };
+  },
+
+  // Buscar archivo por hash
+  async getByHash(hash) {
+    return await db.get('SELECT * FROM media_files WHERE hash = ?', [hash]);
   },
 
   // Actualizar categoría de un archivo
