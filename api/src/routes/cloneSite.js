@@ -366,6 +366,14 @@ router.post('/process-resource', requireAdmin, async (req, res) => {
       const existing = await MediaFiles.getByHash(hash)
       if (existing) {
         console.log(`⚠️  Imagen duplicada detectada (hash: ${hash}), no se guarda ni procesa.`)
+        // Verificar si el archivo físico existe en public/i
+        const publicImgDir = path.join(process.cwd(), 'public', 'i')
+        await fs.ensureDir(publicImgDir)
+        const existingFilePath = path.join(publicImgDir, existing.filename)
+        if (!await fs.pathExists(existingFilePath)) {
+          await fs.writeFile(existingFilePath, response.data)
+          console.log(`✅ Archivo físico de imagen restaurado: ${existing.filename}`)
+        }
       } else {
         // 1. Verificar/crear categoría 'No catalogadas'
         let category = (await MediaCategories.getAll()).find(c => c.name === 'No catalogadas')
