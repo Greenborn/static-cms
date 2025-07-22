@@ -235,11 +235,16 @@ router.post('/', requireAdmin, async (req, res) => {
         preloadCssContent += `\n/* preload link ${i}: ${href} */\n@import url('${href}');\n`
       }
     })
-    // Si hay contenido, guardar en archivo
+    // Si hay contenido, reemplazar rutas de fuentes por /f/nombre.ext y guardar en archivo
     if (preloadCssContent.trim().length > 0) {
+      // Reemplazar url(...) de fuentes por /f/nombre.ext
+      preloadCssContent = preloadCssContent.replace(/url\((['"]?)([^)'"\s]+\.(woff2?|ttf|otf|eot))\1\)/gi, (match, quote, fontUrl) => {
+        const fontFile = fontUrl.split('/').pop().split('?')[0].split('#')[0]
+        return `url('/f/${fontFile}')`
+      })
       const preloadCssPath = path.join(cssPreloadDir, 'preload_preload_.css')
       await fs.writeFile(preloadCssPath, preloadCssContent, 'utf8')
-      console.log('✅ CSS preload extraído y guardado en', preloadCssPath)
+      console.log('✅ CSS preload extraído, rutas de fuentes reemplazadas y guardado en', preloadCssPath)
     }
 
     // Eliminar bloques <style> y <link rel="preload"> o <link rel="modulepreload"> relacionados a CSS/módulos
