@@ -153,7 +153,7 @@ const readTemplateConfig = async (templateDir) => {
 
 // Modificar generateSite para incluir la configuración leída
 const generateSite = async (templateDir) => {
-  const publicDir = process.env.PUBLIC_DIR || '../public';
+  const publicDir = process.env.PUBLIC_DIR || path.join(process.cwd(), 'public');
   try {
     console.log('🚀 Iniciando generación del sitio...');
     await fs.emptyDir(publicDir);
@@ -373,7 +373,7 @@ router.post('/build', asyncHandler(async (req, res) => {
 // Generar una página específica
 router.post('/generate-page/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const publicDir = process.env.PUBLIC_DIR || '../public';
+  const publicDir = process.env.PUBLIC_DIR || path.join(process.cwd(), 'public');
   // Usar la ruta correcta para templates
   const templateDir = path.join(process.cwd(), 'template');
 
@@ -432,7 +432,7 @@ router.post('/generate-page/:id', asyncHandler(async (req, res) => {
 // GET /api/site-builder/status
 // Obtener estado del constructor de sitio
 router.get('/status', asyncHandler(async (req, res) => {
-  const publicDir = process.env.PUBLIC_DIR || '../public';
+  const publicDir = process.env.PUBLIC_DIR || path.join(process.cwd(), 'public');
   
   try {
     const stats = await fs.stat(publicDir);
@@ -457,7 +457,7 @@ router.get('/status', asyncHandler(async (req, res) => {
 // POST /api/site-builder/clean
 // Limpiar el sitio generado
 router.post('/clean', asyncHandler(async (req, res) => {
-  const publicDir = process.env.PUBLIC_DIR || '../public';
+  const publicDir = process.env.PUBLIC_DIR || path.join(process.cwd(), 'public');
   
   try {
     await fs.emptyDir(publicDir);
